@@ -48,7 +48,7 @@ const getProfileById = async (req, res) => {
 const updateProfile = async (req, res) => {
     try {
         const { status, profilePicture, verify, role, displayName } = req.body;
-        const { id } = req.user.user;
+        const { id } = req.user;
         const updateFields = {}; // Tạo đối tượng rỗng để chứa các trường cần cập nhật
 
         const user = await User.findById(id);
