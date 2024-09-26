@@ -4,6 +4,8 @@ const User = require("../models/User");
 const bcrypt = require("bcrypt");
 const HTML_TEMPLATE = require("../services/html-template");
 const SENDMAIL = require("../services/mail");
+const express = require("express");
+const { OAuth2Client } = require("google-auth-library");
 
 const registerUser = async (req, res) => {
     try {
@@ -154,9 +156,26 @@ const changePassword = async (req, res) => {
     return res.status(200).json({ message: "Cập nhật mật khẩu thành công" });
 };
 
+const oAuth2Client = new OAuth2Client(process.env.CLIENT_ID, process.env.CLIENT_SECRET, "postmessage");
+
+const loginGoogle = async (req, res) => {
+    const { tokens } = await oAuth2Client.getToken(req.body.code);
+    console.log(tokens);
+
+    res.json(tokens);
+};
+
+const refreshToken = async (req, res) => {
+    const user = new UserRefreshClient(clientId, clientSecret, req.body.refreshToken);
+    const { credentials } = await user.refreshAccessToken(); // optain new tokens
+    res.json(credentials);
+};
+
 module.exports = {
     registerUser,
     loginUser,
     forgetUser,
+    loginGoogle,
+    refreshToken,
     changePassword,
 };
