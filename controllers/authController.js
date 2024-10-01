@@ -156,9 +156,14 @@ const changePassword = async (req, res) => {
     return res.status(200).json({ message: "Cập nhật mật khẩu thành công" });
 };
 
-const oAuth2Client = new OAuth2Client(process.env.CLIENT_ID, process.env.CLIENT_SECRET, "postmessage");
+async function getUserData(token) {
+    const res = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo?alt=json&access_token=${token}`);
+    const data = await res.json();
+    console.log(data);
+}
 
 const loginGoogle = async (req, res) => {
+    const oAuth2Client = new OAuth2Client(process.env.CLIENT_ID, process.env.CLIENT_SECRET, "postmessage");
     const { tokens } = await oAuth2Client.getToken(req.body.code);
     console.log(tokens);
 

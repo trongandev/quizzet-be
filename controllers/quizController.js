@@ -1,3 +1,4 @@
+const { default: slugify } = require("slugify");
 const { DataQuizModel, QuizModel } = require("../models/Quiz");
 
 const getQuiz = async (req, res) => {
@@ -58,10 +59,9 @@ const getQuizById = async (req, res) => {
 };
 const createQuiz = async (req, res) => {
     try {
-        const { uid, slug, title, subject, email, content, img, noa, status, questions, default: defaultValue } = req.body;
-
+        const { title, subject, email, content, img, noa, status, questions } = req.body;
+        const { id } = req.user;
         // Validate required fields
-        if (!uid) return res.status(400).json({ message: "Server chưa nhận được UID từ bạn, vui lòng đăng nhập lại" });
         if (!title) return res.status(400).json({ message: "Vui lòng nhập tiêu đề" });
         if (!content) return res.status(400).json({ message: "Vui lòng nhập nội dung" });
         if (!questions || !Array.isArray(questions) || questions.length === 0) {
@@ -93,8 +93,8 @@ const createQuiz = async (req, res) => {
 
         // Create and save the new quiz
         const newQuiz = new QuizModel({
-            uid,
-            slug,
+            uid: id,
+            slug: slugify(title, { lower: true }) + "-" + Date.now(),
             title,
             subject,
             email,
@@ -104,7 +104,6 @@ const createQuiz = async (req, res) => {
             date: new Date(), // Current date
             questions: savedQuestions._id,
             status,
-            default: defaultValue,
         });
 
         const savedQuiz = await newQuiz.save();

@@ -76,7 +76,7 @@ const updateProfile = async (req, res) => {
 
 const sendMail = async (req, res) => {
     try {
-        const { id } = req.user.user;
+        const { id } = req.user;
         if (!id) {
             return res.status(400).json({ msg: "Thiếu userId trong tham số" });
         }
@@ -117,7 +117,7 @@ const sendMail = async (req, res) => {
 const checkOTP = async (req, res) => {
     try {
         const { otp } = req.body;
-        const { id } = req.user.user;
+        const { id } = req.user;
         const user = await User.findById(id);
         if (!user) {
             return res.status(404).json({ msg: "Người dùng không tìm thấy" });

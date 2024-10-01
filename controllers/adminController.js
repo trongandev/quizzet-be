@@ -1,9 +1,9 @@
+const { default: slugify } = require("slugify");
 const { SOModel, DataSOModel } = require("../models/SO");
-
 const addSubOutline = async (req, res) => {
     try {
-        const { slug, title, image, quest } = req.body;
-        if (!slug || !title || !quest || !image) {
+        const { title, image, quest } = req.body;
+        if (!title || !quest || !image) {
             return res.status(400).json({ message: "Vui lòng điền đẩy đủ" });
         }
 
@@ -11,9 +11,8 @@ const addSubOutline = async (req, res) => {
             data_so: quest,
         });
         const saveDataSO = await newDataSO.save();
-
         const newSO = new SOModel({
-            slug,
+            slug: slugify(title, { lower: true }) + "-" + Date.now(),
             title,
             image,
             lenght: quest.length,

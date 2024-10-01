@@ -1,0 +1,74 @@
+const mongoose = require("mongoose");
+
+const ToolUserSchema = new mongoose.Schema({
+    username: {
+        type: String,
+        required: true,
+    },
+    password: {
+        type: String,
+        required: true,
+        min: 6,
+    },
+    status: {
+        type: Boolean,
+        default: true,
+    },
+    role: {
+        type: String,
+        default: "user",
+    },
+    failed_login_attempts: {
+        type: Number,
+        default: 0,
+    },
+    count_login: {
+        type: Number,
+        default: 1,
+    },
+    note: {
+        type: String,
+    },
+    active_date: {
+        type: Date,
+    },
+    created_at: {
+        type: Date,
+        default: new Date().toLocaleString("vi-VN", { timeZone: "Asia/Jakarta" }),
+    },
+});
+
+const ToolHistorySchema = new mongoose.Schema({
+    username: {
+        type: String,
+        required: true,
+    },
+    password: {
+        type: String,
+        required: true,
+    },
+    header: {
+        type: Array,
+        required: true,
+    },
+    status: {
+        type: Boolean,
+        default: true, //thành công
+    },
+    count_login: {
+        type: Number,
+        default: 1,
+    },
+    message: {
+        type: String,
+    },
+    created_at: {
+        type: Date,
+        default: new Date().toLocaleString("vi-VN", { timeZone: "Asia/Jakarta" }),
+    },
+});
+
+module.exports = {
+    ToolUserModel: mongoose.model("ToolUser", ToolUserSchema),
+    ToolHistoryModel: mongoose.model("ToolHistory", ToolHistorySchema),
+};

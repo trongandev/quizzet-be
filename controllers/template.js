@@ -23,13 +23,13 @@ const GetbyId = async (req, res) => {
 
 const Create = async (req, res) => {
     try {
-        const { slug, title, image, quest } = req.body;
-        if (!slug || !title || !quest || !image) {
+        const { title, image, quest } = req.body;
+        if (!title || !quest || !image) {
             return res.status(400).json({ message: "Vui lòng điền đẩy đủ" });
         }
 
         const newSO = new SO({
-            slug,
+            slug: slugify(title, { lower: true }) + "-" + Math.floor(Math.random() * 1000),
             title,
             image,
             quest,

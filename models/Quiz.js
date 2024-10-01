@@ -31,7 +31,7 @@ const QuizSchema = new mongoose.Schema({
     },
     date: {
         type: Date,
-        default: Date.now, // Ngày tạo
+        default: new Date().toLocaleString("vi-VN", { timeZone: "Asia/Jakarta" }),
     },
     status: {
         type: Boolean,
@@ -41,9 +41,6 @@ const QuizSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "DataQuiz",
         required: true,
-    },
-    default: {
-        type: String, // Có thể chứa bất kỳ kiểu dữ liệu nào
     },
 });
 

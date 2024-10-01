@@ -36,7 +36,7 @@ const UserSchema = new mongoose.Schema({
     },
     created_at: {
         type: Date,
-        default: Date.now,
+        default: new Date().toLocaleString("vi-VN", { timeZone: "Asia/Jakarta" }),
     },
     otp: {
         type: Number,
