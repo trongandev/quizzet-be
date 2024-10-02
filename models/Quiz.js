@@ -31,7 +31,7 @@ const QuizSchema = new mongoose.Schema({
     },
     date: {
         type: Date,
-        default: Date.now(),
+        default: new Date(),
     },
     status: {
         type: Boolean,

@@ -15,7 +15,7 @@ const SOSchema = new mongoose.Schema({
     },
     date: {
         type: Date,
-        default: Date.now(),
+        default: new Date(),
     },
     lenght: {
         type: Number,
