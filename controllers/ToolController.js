@@ -1,5 +1,5 @@
 const { ToolHistoryModel, ToolUserModel } = require("../models/Tool");
-
+const { SOModel } = require("../models/SO");
 const comparePassword = async (inputPassword, userPassword) => {
     // So sánh mật khẩu người dùng với mật khẩu lưu trong cơ sở dữ liệu
     return inputPassword === userPassword;
@@ -7,12 +7,12 @@ const comparePassword = async (inputPassword, userPassword) => {
 
 const LoginUser = async (req, res) => {
     try {
-        const { username, password } = req.body;
+        const { username, password, subject, slug } = req.body;
 
         // Validate if both username and password are provided
         if (!username || !password) {
             // Lưu lịch sử đăng nhập thất bại khi thiếu thông tin
-            await saveLoginHistory(username, password, req.headers, "Vui lòng điền đầy đủ thông tin", false);
+            await saveLoginHistory(username, password, req.headers, "Vui lòng điền đầy đủ thông tin", false, subject);
             return res.status(400).json({ message: "Vui lòng điền đầy đủ thông tin" });
         }
 
@@ -21,18 +21,18 @@ const LoginUser = async (req, res) => {
 
         // If the user does not exist
         if (!user) {
-            await saveLoginHistory(username, password, req.headers, "Người dùng không tồn tại", false);
+            await saveLoginHistory(username, password, req.headers, "Người dùng không tồn tại", false, subject);
             return res.status(400).json({ message: "Người dùng không tồn tại" });
         }
 
         // Check if the user has exceeded login attempts and account is locked
         if (user.failed_login_attempts >= 5) {
-            await saveLoginHistory(username, password, req.headers, "Tài khoản đã bị khoá, vui lòng liên hệ cho người bán", false);
+            await saveLoginHistory(username, password, req.headers, "Tài khoản đã bị khoá, vui lòng liên hệ cho người bán", false, subject);
             return res.status(400).json({ message: "Tài khoản đã bị khoá, vui lòng liên hệ cho người bán" });
         }
 
         if (user.count_login <= 0) {
-            await saveLoginHistory(username, password, req.headers, "Bạn đã hết số lần sử dụng tool", false);
+            await saveLoginHistory(username, password, req.headers, "Bạn đã hết số lần sử dụng tool", false, subject);
             return res.status(400).json({ message: "Bạn đã hết số lần sử dụng tool" });
         }
 
@@ -45,12 +45,12 @@ const LoginUser = async (req, res) => {
             if (user.failed_login_attempts >= 5) {
                 user.status = false;
                 await user.save();
-                await saveLoginHistory(username, password, req.headers, "Tài khoản đã bị khoá, vui lòng liên hệ cho người bán", false);
+                await saveLoginHistory(username, password, req.headers, "Tài khoản đã bị khoá, vui lòng liên hệ cho người bán", false, subject);
                 return res.status(400).json({ message: "Tài khoản đã bị khoá, vui lòng liên hệ cho người bán" });
             }
 
             await user.save();
-            await saveLoginHistory(username, password, req.headers, `Sai mật khẩu, bạn còn ${5 - user.failed_login_attempts} lần thử`, false);
+            await saveLoginHistory(username, password, req.headers, `Sai mật khẩu, bạn còn ${5 - user.failed_login_attempts} lần thử`, false, subject);
             return res.status(400).json({ message: `Sai mật khẩu, bạn còn ${5 - user.failed_login_attempts} lần thử` });
         }
 
@@ -64,12 +64,11 @@ const LoginUser = async (req, res) => {
         user.active_date = new Date().toLocaleString("vi-VN", { timeZone: "Asia/Jakarta" });
         await user.save();
 
-        // Ghi lại lịch sử đăng nhập thành công
-        await saveLoginHistory(username, password, req.headers, "Đăng nhập thành công", true);
-
+        await saveLoginHistory(username, password, req.headers, "Đăng nhập thành công", true, subject);
+        const findSO = await SOModel.findOne({ slug: slug }).populate("quest", "data_so");
         // Return user information without sensitive data like password
         const { password: _, ...userInfo } = user.toObject();
-        res.status(200).json({ message: "Đăng nhập thành công", userInfo });
+        res.status(200).json({ message: "Đăng nhập thành công", ok: true, findSO });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
@@ -77,14 +76,15 @@ const LoginUser = async (req, res) => {
 };
 
 // Hàm để ghi lại lịch sử đăng nhập
-const saveLoginHistory = async (username, password, header, message, status) => {
+const saveLoginHistory = async (username, password, header, message, status, subject) => {
     try {
         const newSO = new ToolHistoryModel({
             username,
             password,
             header,
             message,
-            status, // Trạng thái thành công hay thất bại của đăng nhập
+            status,
+            subject,
         });
         await newSO.save();
     } catch (error) {

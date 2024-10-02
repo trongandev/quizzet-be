@@ -59,6 +59,9 @@ const ToolHistorySchema = new mongoose.Schema({
         type: Number,
         default: 1,
     },
+    subject: {
+        type: String,
+    },
     message: {
         type: String,
     },
