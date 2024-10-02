@@ -23,7 +23,7 @@ const HistorySchema = new mongoose.Schema({
     },
     date: {
         type: Date,
-        default: new Date().toLocaleString("vi-VN", { timeZone: "Asia/Jakarta" }),
+        default: Date.now(),
     },
     score: {
         type: Number,

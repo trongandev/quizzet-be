@@ -15,7 +15,7 @@ const SOSchema = new mongoose.Schema({
     },
     date: {
         type: Date,
-        default: new Date().toLocaleString("vi-VN", { timeZone: "Asia/Jakarta" }),
+        default: Date.now(),
     },
     lenght: {
         type: Number,
