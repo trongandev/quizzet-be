@@ -7,8 +7,7 @@ const comparePassword = async (inputPassword, userPassword) => {
 
 const LoginUser = async (req, res) => {
     try {
-        const { username, password, subject, slug } = req.body;
-
+        const { username, password, subject } = req.body;
         // Validate if both username and password are provided
         if (!username || !password) {
             // Lưu lịch sử đăng nhập thất bại khi thiếu thông tin
@@ -45,8 +44,8 @@ const LoginUser = async (req, res) => {
             if (user.failed_login_attempts >= 5) {
                 user.status = false;
                 await user.save();
-                await saveLoginHistory(username, password, req.headers, "Tài khoản đã bị khoá, vui lòng liên hệ cho người bán", false, subject);
-                return res.status(400).json({ message: "Tài khoản đã bị khoá, vui lòng liên hệ cho người bán" });
+                await saveLoginHistory(username, password, req.headers, "Tài khoản đã bị khoá do hết số lần thử đăng nhập, vui lòng liên hệ cho người bán", false, subject);
+                return res.status(400).json({ message: "Tài khoản đã bị khoá do hết số lần thử đăng nhập, vui lòng liên hệ cho người bán" });
             }
 
             await user.save();
@@ -65,7 +64,8 @@ const LoginUser = async (req, res) => {
         await user.save();
 
         await saveLoginHistory(username, password, req.headers, "Đăng nhập thành công", true, subject);
-        const findSO = await SOModel.findOne({ slug: slug }).populate("quest", "data_so");
+        const findSO = await SOModel.findOne({ slug: subject }).populate("quest", "data_so");
+        if (!findSO) return res.status(400).json({ message: "Không tìm thấy môn này" });
         // Return user information without sensitive data like password
         const { password: _, ...userInfo } = user.toObject();
         res.status(200).json({ message: "Đăng nhập thành công", ok: true, findSO });

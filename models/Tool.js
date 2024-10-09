@@ -34,7 +34,7 @@ const ToolUserSchema = new mongoose.Schema({
     },
     created_at: {
         type: Date,
-        default: new Date().toLocaleString("vi-VN", { timeZone: "Asia/Jakarta" }),
+        default: new Date(),
     },
 });
 
