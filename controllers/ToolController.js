@@ -65,9 +65,9 @@ const LoginUser = async (req, res) => {
 
         const findSO = await SOModel.findOne({ slug: subject }).populate("quest", "data_so");
         if (!findSO) return res.status(400).json({ message: "Không tìm thấy môn này" });
-        await saveLoginHistory(username, password, req.headers, "Đăng nhập thành công", true, subject);
         // Return user information without sensitive data like password
         const { password: _, ...userInfo } = user.toObject();
+        await saveLoginHistory(username, password, req.headers, "Đăng nhập thành công", true, subject);
         res.status(200).json({ message: "Đăng nhập thành công", ok: true, findSO });
     } catch (error) {
         console.error(error);
