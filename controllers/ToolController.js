@@ -60,7 +60,7 @@ const LoginUser = async (req, res) => {
         } else {
             user.count_login -= 1;
         }
-        user.active_date = new Date().toLocaleString("vi-VN", { timeZone: "Asia/Jakarta" });
+        user.active_date = new Date();
         await user.save();
 
         const findSO = await SOModel.findOne({ slug: subject }).populate("quest", "data_so");
