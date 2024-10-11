@@ -28,7 +28,7 @@ const getAllHistory = async (req, res) => {
 const getHistoryById = async (req, res) => {
     try {
         const { _id } = req.params;
-        const history = await HistoryModel.find({ _id }).populate("questions");
+        const history = await HistoryModel.findOne({ _id }).populate("questions");
 
         res.status(200).json({ history });
     } catch (error) {
