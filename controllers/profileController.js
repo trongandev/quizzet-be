@@ -27,6 +27,25 @@ const getProfile = async (req, res) => {
     }
 };
 
+const findProfileByName = async (req, res) => {
+    try {
+        const { text } = req.params;
+        const { id } = req.user;
+        // Sử dụng $regex để tìm kiếm gần đúng và $options: 'i' để không phân biệt chữ hoa thường
+        const users = await User.find({
+            displayName: { $regex: text, $options: "i" },
+            _id: { $ne: id }, // Loại trừ người dùng hiện tại
+        })
+            .select("-password")
+            .populate("profilePicture");
+
+        res.status(200).json(users);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
+    }
+};
+
 const getProfileById = async (req, res) => {
     try {
         const uid = req.params.uid;
@@ -140,6 +159,7 @@ const checkOTP = async (req, res) => {
 module.exports = {
     getAllProfile,
     getProfile,
+    findProfileByName,
     getProfileById,
     updateProfile,
     sendMail,
