@@ -4,7 +4,7 @@ const Get = async (req, res) => {
     try {
         const { id } = req.user;
         const chats = await Chat.find({ participants: id }).populate("participants", "displayName profilePicture"); // Populate để hiển thị tên của người dùng
-        res.status(200).json(chats);
+        res.status(200).json({ chats, ok: true });
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });

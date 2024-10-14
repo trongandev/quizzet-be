@@ -66,7 +66,7 @@ const loginUser = async (req, res) => {
             },
         };
 
-        const token = jwt.sign(payload, process.env.SECRET_KEY, { expiresIn: "120h" });
+        const token = jwt.sign(payload, process.env.SECRET_KEY, { expiresIn: "1d" });
         res.status(200).json({ message: "Đăng nhập thành công", token });
     } catch (error) {
         console.log(error);

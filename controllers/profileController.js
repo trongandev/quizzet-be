@@ -37,9 +37,9 @@ const findProfileByName = async (req, res) => {
             _id: { $ne: id }, // Loại trừ người dùng hiện tại
         })
             .select("-password")
-            .populate("profilePicture");
+            .populate("displayName profilePicture");
 
-        res.status(200).json(users);
+        res.status(200).json({ users, ok: true });
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
