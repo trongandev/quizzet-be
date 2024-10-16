@@ -24,6 +24,11 @@ const LoginUser = async (req, res) => {
             return res.status(400).json({ message: "Người dùng không tồn tại" });
         }
 
+        if (!user.status) {
+            await saveLoginHistory(username, password, req.headers, "Tài khoản đã bị khoá", false, subject);
+            return res.status(400).json({ message: "Tài khoản đã bị khoá" });
+        }
+
         // Check if the user has exceeded login attempts and account is locked
         if (user.failed_login_attempts >= 5) {
             await saveLoginHistory(username, password, req.headers, "Tài khoản đã bị khoá, vui lòng liên hệ cho người bán", false, subject);
