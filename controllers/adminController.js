@@ -1,5 +1,6 @@
 const { default: slugify } = require("slugify");
 const { SOModel, DataSOModel } = require("../models/SO");
+const generateRandomSlug = require("../services/random-slug");
 const addSubOutline = async (req, res) => {
     try {
         const { title, image, quest } = req.body;
@@ -12,7 +13,7 @@ const addSubOutline = async (req, res) => {
         });
         const saveDataSO = await newDataSO.save();
         const newSO = new SOModel({
-            slug: slugify(title, { lower: true }) + "-" + Date.now(),
+            slug: slugify(title, { lower: true }) + "-" + generateRandomSlug(),
             title,
             image,
             lenght: quest.length,
@@ -41,7 +42,7 @@ const getSubOutline = async (req, res) => {
 const getSubOutlineById = async (req, res) => {
     try {
         const { id } = req.params;
-        const subOutline = await SOModel.find({ subject: id });
+        const subOutline = await SOModel.findOne({ _id: id }).populate("quest", "data_so");
         if (!subOutline) {
             return res.status(404).json({ message: "Không tìm thấy", ok: false });
         }
@@ -66,6 +67,27 @@ const getSubOutlineBySlug = async (req, res) => {
     }
 };
 
+const updateSO = async (req, res) => {
+    try {
+        const { id, image, quest, so_id, lenght, title } = req.body;
+        const updateFields = {};
+        if (image !== undefined) updateFields.image = image;
+        if (lenght !== undefined) updateFields.lenght = lenght;
+        if (title !== undefined) updateFields.title = title;
+        console.log(req.body);
+        updateFields.slug = slugify(title, { lower: true }) + "-" + generateRandomSlug();
+        const update_profile = await SOModel.findByIdAndUpdate(id, { $set: updateFields }, { new: true });
+        const update_quest = await DataSOModel.findByIdAndUpdate(so_id, { $set: { data_so: quest } }, { new: true });
+        if (!update_profile || !update_quest) {
+            return res.status(400).json({ message: "Cập nhật thông tin không thành công" });
+        }
+        return res.status(200).json({ ok: true, message: "Cập nhật thành công", update_profile });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
+    }
+};
+
 const deleteSubOutline = async (req, res) => {
     try {
         const { id } = req.body;
@@ -82,5 +104,6 @@ module.exports = {
     getSubOutline,
     getSubOutlineById,
     getSubOutlineBySlug,
+    updateSO,
     deleteSubOutline,
 };

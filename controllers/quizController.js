@@ -1,5 +1,6 @@
 const { default: slugify } = require("slugify");
 const { DataQuizModel, QuizModel } = require("../models/Quiz");
+const generateRandomSlug = require("../services/random-slug");
 
 const getQuiz = async (req, res) => {
     try {
@@ -94,7 +95,7 @@ const createQuiz = async (req, res) => {
         // Create and save the new quiz
         const newQuiz = new QuizModel({
             uid: id,
-            slug: slugify(title, { lower: true }) + "-" + Date.now(),
+            slug: slugify(title, { lower: true }) + "-" + generateRandomSlug(),
             title,
             subject,
             email,
@@ -141,7 +142,6 @@ const updateQuiz = async (req, res) => {
         const updateFields = {}; // Tạo đối tượng rỗng để chứa các trường cần cập nhật
 
         // Kiểm tra từng trường trong req.body và chỉ thêm vào các trường không undefined
-        if (req.body.slug !== undefined) updateFields.slug = req.body.slug;
         if (req.body.title !== undefined) updateFields.title = req.body.title;
         if (req.body.subject !== undefined) updateFields.subject = req.body.subject;
         if (req.body.content !== undefined) updateFields.content = req.body.content;
@@ -160,7 +160,7 @@ const updateQuiz = async (req, res) => {
         if (req.body.default !== undefined) updateFields.default = req.body.default;
 
         if (req.body.status !== undefined) updateFields.status = req.body.status;
-
+        updateFields.slug = slugify(title, { lower: true }) + "-" + generateRandomSlug();
         // Tìm và cập nhật quiz
         const updatedQuiz = await QuizModel.findByIdAndUpdate(
             quizId,

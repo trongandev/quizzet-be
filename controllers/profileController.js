@@ -15,6 +15,7 @@ const getAllProfile = async (req, res) => {
 const getProfile = async (req, res) => {
     try {
         const { id } = req.user;
+        console.log(id);
         const user = await User.findById(id).select("-password").populate("displayName profilePicture");
         const quiz = await QuizModel.find({ uid: id }).sort({ date: -1 });
         if (!user) {

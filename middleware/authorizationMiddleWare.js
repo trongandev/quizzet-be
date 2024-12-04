@@ -9,6 +9,7 @@ const authMiddleware = async (req, res, next) => {
             req.user = { id: decoded.user.id, role: user.role };
             next();
         } catch (error) {
+            console.log(error);
             res.status(401).json({ message: "Xác thực không hợp lệ" });
         }
     } else {
