@@ -143,7 +143,7 @@ const updateQuiz = async (req, res) => {
         // Kiểm tra từng trường trong req.body và chỉ thêm vào các trường không undefined
         if (req.body.title !== undefined) {
             updateFields.title = req.body.title;
-            updateFields.slug = slugify(title, { lower: true }) + "-" + generateRandomSlug();
+            updateFields.slug = slugify(req.body.title, { lower: true }) + "-" + generateRandomSlug();
         }
         if (req.body.subject !== undefined) updateFields.subject = req.body.subject;
         if (req.body.content !== undefined) updateFields.content = req.body.content;
