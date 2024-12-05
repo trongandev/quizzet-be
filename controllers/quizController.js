@@ -135,14 +135,16 @@ const deleteQuiz = async (req, res) => {
 const updateQuiz = async (req, res) => {
     try {
         const quizId = req.params._id; // Lấy id từ URL
-        console.log(req.body);
         if (!quizId) {
             return res.status(400).json({ message: "Bạn chưa đăng nhập, vui lòng reload lại trang", status: 400 });
         }
         const updateFields = {}; // Tạo đối tượng rỗng để chứa các trường cần cập nhật
 
         // Kiểm tra từng trường trong req.body và chỉ thêm vào các trường không undefined
-        if (req.body.title !== undefined) updateFields.title = req.body.title;
+        if (req.body.title !== undefined) {
+            updateFields.title = req.body.title;
+            updateFields.slug = slugify(title, { lower: true }) + "-" + generateRandomSlug();
+        }
         if (req.body.subject !== undefined) updateFields.subject = req.body.subject;
         if (req.body.content !== undefined) updateFields.content = req.body.content;
         if (req.body.img !== undefined) updateFields.img = req.body.img;
@@ -160,7 +162,6 @@ const updateQuiz = async (req, res) => {
         if (req.body.default !== undefined) updateFields.default = req.body.default;
 
         if (req.body.status !== undefined) updateFields.status = req.body.status;
-        updateFields.slug = slugify(title, { lower: true }) + "-" + generateRandomSlug();
         // Tìm và cập nhật quiz
         const updatedQuiz = await QuizModel.findByIdAndUpdate(
             quizId,
