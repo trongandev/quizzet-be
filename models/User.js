@@ -1,6 +1,11 @@
 const mongoose = require("mongoose");
 
 const UserSchema = new mongoose.Schema({
+    googleId: {
+        type: String,
+        unique: true,
+        sparse: true, // Cho phép null hoặc giá trị duy nhất
+    },
     displayName: {
         type: String,
         required: true,
@@ -12,10 +17,10 @@ const UserSchema = new mongoose.Schema({
         required: true,
         max: 50,
         unique: true,
+        sparse: true, // Cho phép null hoặc giá trị duy nhất
     },
     password: {
         type: String,
-        required: true,
         min: 6,
     },
     verify: {
@@ -29,6 +34,10 @@ const UserSchema = new mongoose.Schema({
     status: {
         type: Boolean,
         default: true,
+    },
+    provider: {
+        type: String,
+        default: "local",
     },
     profilePicture: {
         type: String,
