@@ -31,7 +31,7 @@ const addSubOutline = async (req, res) => {
 
 const getSubOutline = async (req, res) => {
     try {
-        const subOutline = await SOModel.find().sort({ date: -1 });
+        const subOutline = await SOModel.find().sort({ view: -1 });
         res.status(200).json(subOutline);
     } catch (error) {
         console.log(error);
@@ -74,7 +74,6 @@ const updateSO = async (req, res) => {
         if (image !== undefined) updateFields.image = image;
         if (lenght !== undefined) updateFields.lenght = lenght;
         if (title !== undefined) updateFields.title = title;
-        console.log(req.body);
         updateFields.slug = slugify(title, { lower: true }) + "-" + generateRandomSlug();
         const update_profile = await SOModel.findByIdAndUpdate(id, { $set: updateFields }, { new: true });
         const update_quest = await DataSOModel.findByIdAndUpdate(so_id, { $set: { data_so: quest } }, { new: true });
@@ -91,7 +90,6 @@ const updateSO = async (req, res) => {
 const updateViewSO = async (req, res) => {
     try {
         const { id } = req.params;
-        console.log(id);
         const so = await SOModel.findOne({ _id: id });
         if (!so) {
             return res.status(404).json({ message: "Không tìm thấy", ok: false });
