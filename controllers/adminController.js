@@ -88,6 +88,22 @@ const updateSO = async (req, res) => {
     }
 };
 
+const updateViewSO = async (req, res) => {
+    try {
+        const { id } = req.params;
+        console.log(id);
+        const so = await SOModel.findOne({ _id: id });
+        if (!so) {
+            return res.status(404).json({ message: "Không tìm thấy", ok: false });
+        }
+        const update = await SOModel.findByIdAndUpdate(id, { $set: { view: so.view + 1 } }, { new: true });
+        res.status(200).json({ ok: true, update });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
+    }
+};
+
 const deleteSubOutline = async (req, res) => {
     try {
         const { id } = req.body;
@@ -105,5 +121,6 @@ module.exports = {
     getSubOutlineById,
     getSubOutlineBySlug,
     updateSO,
+    updateViewSO,
     deleteSubOutline,
 };

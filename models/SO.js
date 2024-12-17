@@ -21,6 +21,10 @@ const SOSchema = new mongoose.Schema({
         type: Number,
         default: 0,
     },
+    view: {
+        type: Number,
+        default: 1,
+    },
     quest: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "DataSO",
