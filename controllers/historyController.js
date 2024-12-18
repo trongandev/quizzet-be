@@ -41,7 +41,6 @@ const createHistory = async (req, res) => {
     try {
         const { uid, id_quiz, title, content, image_quiz, score, questions } = req.body;
         const { id } = req.user;
-        console.log(uid, req.user);
         if (uid === "") return res.status(400).json({ message: "Server chưa nhận được UID từ bạn, vui lòng đăng nhập lại" });
         if (id !== uid) return res.status(400).json({ message: "Vui lòng đăng nhập lại" });
         if (title === "") return res.status(400).json({ message: "Vui lòng nhập tiêu đề" });

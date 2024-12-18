@@ -13,7 +13,6 @@ const authMiddleware = async (req, res, next) => {
                 const user = await User.findById(decoded.id);
                 req.user = { id: user._id.toString(), role: user.role };
             }
-            console.log("decode");
             next();
         } catch (error) {
             console.log(error);

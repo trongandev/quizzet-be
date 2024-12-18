@@ -4,7 +4,10 @@ const Get = async (req, res) => {
     try {
         const { id } = req.user;
         const chats = await Chat.find({ participants: id }).populate("participants", "displayName profilePicture"); // Populate để hiển thị tên của người dùng
-        res.status(200).json({ chats, ok: true });
+
+        const data_id = chats.map((chat) => chat.participants.filter((participant) => participant._id.toString() !== id.toString()).map((participant) => participant._id)).flat(); // Làm phẳng mảng nếu có nhiều chat
+
+        res.status(200).json({ data_id, chats, ok: true });
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
@@ -73,8 +76,8 @@ const Update = async (req, res) => {
             chatId,
             {
                 $push: { messages: { sender: id, text, created_at: new Date() } }, // Thêm tin nhắn mới vào mảng messages
-                lastMessage: text,
-                lastMessageTime: new Date(),
+                last_message: text,
+                last_message_date: new Date(),
             },
             { new: true }
         );
