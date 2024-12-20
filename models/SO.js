@@ -1,6 +1,11 @@
 const mongoose = require("mongoose");
 
 const SOSchema = new mongoose.Schema({
+    user_id: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+    },
     slug: {
         type: String,
         required: true,
@@ -24,6 +29,11 @@ const SOSchema = new mongoose.Schema({
     view: {
         type: Number,
         default: 1,
+    },
+    subject: {
+        type: String,
+        required: true,
+        default: "none",
     },
     quest: {
         type: mongoose.Schema.Types.ObjectId,

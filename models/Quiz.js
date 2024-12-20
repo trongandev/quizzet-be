@@ -24,6 +24,7 @@ const QuizSchema = new mongoose.Schema({
     },
     img: {
         type: String,
+        default: "https://www.its.ac.id/tmesin/wp-content/uploads/sites/22/2022/07/no-image.png",
     },
     noa: {
         type: Number,
