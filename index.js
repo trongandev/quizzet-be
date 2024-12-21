@@ -10,7 +10,7 @@ const HistoryRoutes = require("./routes/history");
 const AdminRoutes = require("./routes/admin");
 const ToolRoutes = require("./routes/tool");
 const ChatRoutes = require("./routes/chat");
-const uploadRoutes = require("./routes/uploadRouter");
+const uploadRoutes = require("./routes/upload");
 const ChatCommuRoutes = require("./routes/ChatCommunity");
 const connectDB = require("./config/db");
 const app = express();
@@ -71,7 +71,7 @@ app.use("/login/failure", (req, res) => {
         error: "Unable to authenticate with Google",
     });
 });
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 app.use("/api/auth", authRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/quiz", quizRoutes);
@@ -80,7 +80,7 @@ app.use("/api/admin", AdminRoutes);
 app.use("/api/tool", ToolRoutes);
 app.use("/api/chat", ChatRoutes);
 app.use("/api/chatcommu", ChatCommuRoutes);
-app.use("/api", uploadRoutes);
+app.use("/api/upload", uploadRoutes);
 
 const PORT = process.env.PORT || 5001;
 
