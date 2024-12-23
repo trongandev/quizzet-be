@@ -19,17 +19,17 @@ const storage = new CloudinaryStorage({
 });
 
 const upload = multer({ storage: storage });
-
-// Controller xử lý upload
 const uploadImage = async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ message: "No file uploaded" });
         }
+
         const file = req.file;
+
         res.status(200).json({
             message: "File uploaded successfully",
-            data: file.path, // URL của ảnh trên Cloudinary
+            originalUrl: file.path,
         });
     } catch (error) {
         console.error(error);

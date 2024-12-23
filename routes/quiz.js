@@ -1,9 +1,10 @@
 const express = require("express");
 const { authMiddleware, checkAdminMiddleware } = require("../middleware/authorizationMiddleWare");
-const { getQuiz, getQuizByUser, getQuizBySubject, getQuizAdmin, getQuizById, createQuiz, deleteQuiz, updateQuiz } = require("../controllers/quizController");
+const { getQuiz, getQuizByUser, getQuizBySubject, getQuizAdmin, getQuizById, createQuiz, deleteQuiz, updateQuiz, DocumentBank } = require("../controllers/quizController");
 const router = express.Router();
 
 router.get("/", getQuiz);
+router.get("/documentbank", DocumentBank);
 router.get("/getquizbyuser", authMiddleware, getQuizByUser);
 router.get("/admin", authMiddleware, checkAdminMiddleware, getQuizAdmin);
 router.get("/:slug", getQuizById);

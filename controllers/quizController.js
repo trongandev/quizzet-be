@@ -182,6 +182,77 @@ const updateQuiz = async (req, res) => {
     }
 };
 
+// Helper function to shuffle array
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+const DocumentBank = async (req, res) => {
+    try {
+        const { limit = 10, subject = "lsdang" } = req.query;
+
+        // Convert limit to number and validate
+        const questionLimit = parseInt(limit);
+        if (isNaN(questionLimit) || questionLimit <= 0) {
+            return res.status(400).json({
+                message: "Số lượng câu hỏi không hợp lệ",
+            });
+        }
+
+        // First, get all available quizzes for the subject
+        const quizzes = await QuizModel.find({
+            status: true,
+            subject: subject,
+        })
+            .populate("questions")
+            .sort({ date: -1 });
+
+        if (!quizzes || quizzes.length === 0) {
+            return res.status(404).json({
+                message: "Không tìm thấy câu hỏi cho môn học này",
+            });
+        }
+
+        // Collect all questions from all quizzes
+        let allQuestions = [];
+        for (const quiz of quizzes) {
+            if (quiz.questions && quiz.questions.data_quiz) {
+                allQuestions = allQuestions.concat(quiz.questions.data_quiz);
+            }
+        }
+
+        // Shuffle all questions
+        const shuffledQuestions = shuffleArray(allQuestions);
+
+        // Take only the requested number of questions
+        const selectedQuestions = shuffledQuestions.slice(0, questionLimit);
+
+        // If we don't have enough questions, inform the user
+        if (selectedQuestions.length < questionLimit) {
+            return res.status(200).json({
+                message: `Chỉ tìm thấy ${selectedQuestions.length} câu hỏi trong ngân hàng đề`,
+                questions: selectedQuestions,
+                totalQuestions: selectedQuestions.length,
+            });
+        }
+
+        // Return the selected questions
+        res.status(200).json({
+            questions: selectedQuestions,
+            totalQuestions: selectedQuestions.length,
+        });
+    } catch (error) {
+        console.error("DocumentBank Error:", error);
+        res.status(500).json({
+            message: "Server gặp lỗi, vui lòng thử lại sau ít phút",
+        });
+    }
+};
+
 module.exports = {
     getQuiz,
     getQuizByUser,
@@ -191,4 +262,5 @@ module.exports = {
     createQuiz,
     deleteQuiz,
     updateQuiz,
+    DocumentBank,
 };
