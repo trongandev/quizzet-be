@@ -9,7 +9,8 @@ const getMessages = async (req, res) => {
             path: "messages",
             populate: [
                 { path: "userId", select: "displayName profilePicture" }, // Populating User
-                { path: "replyTo", select: "message userId", populate: { path: "userId", select: "displayName" } }, // Populating replyTo
+                { path: "replyTo", select: "message userId unsend", populate: { path: "userId", select: "displayName" } }, // Populating replyTo
+                { path: "reactions.userId", select: "displayName profilePicture" }, // Populating reactions
             ],
         });
 
@@ -26,7 +27,6 @@ const getMessages = async (req, res) => {
         res.status(500).send(error.message);
     }
 };
-
 const addMessage = async (req, res) => {
     const { userId, message, image, replyTo } = req.body;
 
@@ -40,12 +40,15 @@ const addMessage = async (req, res) => {
         });
 
         // Lưu tin nhắn
-        await newMessage.save();
+        const savedMessage = await newMessage.save();
 
         // Gắn tin nhắn vào phòng chat
-        const chatCommunity = await ChatCommunity.findOneAndUpdate({ room: "community" }, { $push: { messages: newMessage._id } }, { new: true, upsert: true });
+        await ChatCommunity.findOneAndUpdate({ room: "community" }, { $push: { messages: savedMessage._id } }, { new: true, upsert: true });
 
-        res.status(201).send(newMessage);
+        // Lấy lại tin nhắn vừa lưu và populate
+        const populatedMessage = await Message.findById(savedMessage._id).populate("userId").populate("replyTo");
+
+        res.status(201).send(populatedMessage);
     } catch (error) {
         res.status(500).send(error.message);
     }
@@ -53,18 +56,57 @@ const addMessage = async (req, res) => {
 
 const addReaction = async (req, res) => {
     const { messageId, userId, emoji } = req.body;
+
     try {
-        let chatCommunity = await ChatCommunity.findOne({ "messages._id": messageId });
-        if (!chatCommunity) {
-            return res.status(404).send("Message not found");
+        // Tìm tin nhắn dựa trên `messageId`
+        const message = await Message.findById(messageId);
+        console.log(messageId);
+
+        if (!message) {
+            return res.status(404).json({ ok: false, message: "Tin nhắn không tồn tại" });
         }
 
-        let message = chatCommunity.messages.id(messageId);
-        message.reactions.push({ userId, emoji });
+        // Kiểm tra xem userId đã react chưa
+        const existingReactionIndex = message.reactions.findIndex((reaction) => reaction.userId.toString() === userId.toString());
 
-        await chatCommunity.save();
-        res.status(200).send(message.reactions);
+        if (existingReactionIndex !== -1) {
+            // Nếu đã react
+            if (message.reactions[existingReactionIndex].emoji === emoji) {
+                // Nếu emoji giống nhau, xóa reaction
+                message.reactions.splice(existingReactionIndex, 1);
+            } else {
+                // Nếu emoji khác nhau, cập nhật emoji
+                message.reactions[existingReactionIndex].emoji = emoji;
+            }
+        } else {
+            // Nếu chưa react, thêm reaction mới
+            message.reactions.push({ userId, emoji });
+        }
+
+        // Lưu cập nhật vào DB
+        await message.save();
+
+        res.status(200).json({ ok: true, reactions: message.reactions });
     } catch (error) {
+        console.error("Error in addReaction:", error);
+        res.status(500).json({ ok: false, message: "Lỗi server" });
+    }
+};
+
+const unsendMessage = async (req, res) => {
+    const { messageId, userId } = req.body;
+
+    try {
+        const message = await Message.findOneAndUpdate({ _id: messageId, userId: userId }, { $set: { unsend: true } }, { new: true });
+
+        if (!message) {
+            return res.status(404).json({ ok: false, message: "Tin nhắn không tồn tại hoặc bạn không có quyền xóa" });
+        }
+
+        res.status(200).json({ ok: true, message: "Gỡ tin nhắn thành công" });
+    } catch (error) {
+        console.log(error);
+
         res.status(500).send(error.message);
     }
 };
@@ -73,4 +115,5 @@ module.exports = {
     getMessages,
     addReaction,
     addMessage,
+    unsendMessage,
 };

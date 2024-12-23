@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 // Schema cho Message
 const messageSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // Tham chiếu đến User
-    message: { type: String, required: true },
+    message: { type: String },
     image: { type: String },
     replyTo: { type: mongoose.Schema.Types.ObjectId, ref: "Message", default: null }, // Tham chiếu đến Message khác
     reactions: [
@@ -12,6 +12,7 @@ const messageSchema = new mongoose.Schema({
             emoji: String,
         },
     ],
+    unsend: { type: Boolean, default: false },
     timestamp: { type: Date, default: Date.now },
 });
 
