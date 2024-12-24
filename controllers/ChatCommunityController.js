@@ -76,7 +76,6 @@ const addReaction = async (req, res) => {
     try {
         // Tìm tin nhắn dựa trên `messageId`
         const message = await Message.findById(messageId);
-        console.log(messageId);
 
         if (!message) {
             return res.status(404).json({ ok: false, message: "Tin nhắn không tồn tại" });

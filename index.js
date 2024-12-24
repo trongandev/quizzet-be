@@ -12,6 +12,8 @@ const ToolRoutes = require("./routes/tool");
 const ChatRoutes = require("./routes/chat");
 const uploadRoutes = require("./routes/upload");
 const ChatCommuRoutes = require("./routes/ChatCommunity");
+const flashCardRoutes = require("./routes/flashcard");
+
 const connectDB = require("./config/db");
 const app = express();
 const dotenv = require("dotenv");
@@ -49,7 +51,6 @@ app.get("/api/auth/google", passport.authenticate("google", { scope: ["profile",
 app.get(
     "/api/auth/google/callback",
     (req, res, next) => {
-        console.log("Callback Query:", req.query);
         next();
     },
     passport.authenticate("google", {
@@ -81,6 +82,16 @@ app.use("/api/tool", ToolRoutes);
 app.use("/api/chat", ChatRoutes);
 app.use("/api/chatcommu", ChatCommuRoutes);
 app.use("/api/upload", uploadRoutes);
+app.use("/api", flashCardRoutes);
+
+// phát âm thanh bằng proxy để tránh lỗi CORS
+app.get("/api/proxy", async (req, res) => {
+    const { audio, type } = req.query;
+    const response = await fetch(`https://dict.youdao.com/dictvoice?audio=${audio}&type=${type}`);
+    const data = await response.arrayBuffer();
+    res.set("Content-Type", "audio/mpeg");
+    res.send(Buffer.from(data));
+});
 
 const PORT = process.env.PORT || 5001;
 

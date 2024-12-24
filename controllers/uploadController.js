@@ -8,7 +8,6 @@ cloudinary.config({
     api_key: "913945986943786",
     api_secret: "pMYKdWkLDy_fiyzNsJa3WkE6XUo",
 });
-console.log("", process.env.CLOUD_NAME);
 // Cấu hình Multer với Cloudinary Storage
 const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
