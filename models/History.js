@@ -1,25 +1,14 @@
 const mongoose = require("mongoose");
 
 const HistorySchema = new mongoose.Schema({
-    uid: {
+    user_id: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User", // Liên kết tới User
+        ref: "User",
         required: true,
     },
-    id_quiz: {
-        type: String,
-        required: true,
-    },
-    title: {
-        type: String,
-        required: true,
-    },
-    content: {
-        type: String,
-        required: true,
-    },
-    image_quiz: {
-        type: String,
+    quiz_id: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Quiz",
     },
     date: {
         type: Date,
@@ -29,7 +18,7 @@ const HistorySchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
-    lenght: {
+    time: {
         type: Number,
         required: true,
     },

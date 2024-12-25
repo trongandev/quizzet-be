@@ -59,12 +59,12 @@ exports.getAllFlashCards = async (req, res) => {
 exports.getFlashCardById = async (req, res) => {
     try {
         const { id } = req.params;
-        console.log(id);
         const listFlashCards = await ListFlashCard.findById(id).populate("flashcards");
 
         if (!listFlashCards) {
             return res.status(404).json({ message: "Không tìm thấy danh sách flashcards cho người dùng này" });
         }
+
         return res.status(200).json({ ok: true, listFlashCards });
     } catch (error) {
         console.log(error);
@@ -113,10 +113,10 @@ exports.deleteFlashCard = async (req, res) => {
         const flashcard = await FlashCard.findByIdAndDelete(id);
 
         if (!flashcard) {
-            return res.status(404).json({ message: "Không tìm thấy flashcard này để xóa" });
+            return res.status(404).json({ message: "Không tìm thấy từ này để xóa" });
         }
 
-        return res.status(200).json({ message: "Flashcard đã được xóa thành công" });
+        return res.status(200).json({ ok: true, message: `Từ ${flashcard.title} đã được xóa thành công` });
     } catch (error) {
         return res.status(500).json({ message: "Lỗi khi xóa flashcard", error: error.message });
     }
