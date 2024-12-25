@@ -40,26 +40,11 @@ exports.createFlashCard = async (req, res) => {
     }
 };
 
-// Lấy tất cả flashcard ở chế độ public
-exports.getAllFlashCards = async (req, res) => {
-    try {
-        const flashcards = await FlashCard.find({ public: true }).sort({ created_at: -1 });
-
-        if (!flashcards.length) {
-            return res.status(404).json({ message: "Chưa có flashcard nào được tạo" });
-        }
-
-        return res.status(200).json(flashcards);
-    } catch (error) {
-        return res.status(500).json({ message: "Lỗi khi lấy danh sách flashcards", error: error.message });
-    }
-};
-
 // Lấy flashcard theo ID
 exports.getFlashCardById = async (req, res) => {
     try {
         const { id } = req.params;
-        const listFlashCards = await ListFlashCard.findById(id).populate("flashcards");
+        const listFlashCards = await ListFlashCard.findById(id).populate("flashcards").populate("userId", "_id displayName profilePicture");
 
         if (!listFlashCards) {
             return res.status(404).json({ message: "Không tìm thấy danh sách flashcards cho người dùng này" });
@@ -215,5 +200,20 @@ exports.deleteListFlashCard = async (req, res) => {
         return res.status(200).json({ ok: true, message: "Danh sách flashcards đã được xóa thành công" });
     } catch (error) {
         return res.status(500).json({ message: "Lỗi khi xóa danh sách flashcards", error: error.message });
+    }
+};
+
+// Lấy tất cả flashcard ở chế độ public
+exports.getAllFlashCardsPublic = async (req, res) => {
+    try {
+        const publicFlashcards = await ListFlashCard.find({ public: true }).populate("userId", "_id displayName profilePicture").sort({ created_at: -1 });
+        if (!publicFlashcards) {
+            return res.status(404).json({ message: "Chưa có flashcard nào được tạo" });
+        }
+
+        return res.status(200).json({ ok: true, publicFlashcards });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: "Lỗi khi lấy danh sách flashcards", error: error.message });
     }
 };
