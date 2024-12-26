@@ -11,6 +11,7 @@ const AdminRoutes = require("./routes/admin");
 const ToolRoutes = require("./routes/tool");
 const ChatRoutes = require("./routes/chat");
 const uploadRoutes = require("./routes/upload");
+const noticeRoutes = require("./routes/notice");
 const ChatCommuRoutes = require("./routes/ChatCommunity");
 const flashCardRoutes = require("./routes/flashcard");
 
@@ -82,6 +83,7 @@ app.use("/api/tool", ToolRoutes);
 app.use("/api/chat", ChatRoutes);
 app.use("/api/chatcommu", ChatCommuRoutes);
 app.use("/api/upload", uploadRoutes);
+app.use("/api/notice", noticeRoutes);
 app.use("/api", flashCardRoutes);
 
 // phát âm thanh bằng proxy để tránh lỗi CORS

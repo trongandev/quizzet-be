@@ -4,6 +4,7 @@ const generateRandomSlug = require("../services/random-slug");
 const addSubOutline = async (req, res) => {
     try {
         const { title, image, quest } = req.body;
+        const { id } = req.user;
         if (!title || !quest || !image) {
             return res.status(400).json({ message: "Vui lòng điền đẩy đủ" });
         }
@@ -13,6 +14,7 @@ const addSubOutline = async (req, res) => {
         });
         const saveDataSO = await newDataSO.save();
         const newSO = new SOModel({
+            user_id: id,
             slug: slugify(title, { lower: true }) + "-" + generateRandomSlug(),
             title,
             image,
