@@ -13,6 +13,7 @@ const getMessages = async (req, res) => {
         // Lấy tin nhắn theo giới hạn và skip
         const totalMessages = await Message.countDocuments({ _id: { $in: chatCommunity.messages } }); // Tổng số tin nhắn
         const messages = await Message.find({ _id: { $in: chatCommunity.messages } })
+            .sort({ createdAt: -1 })
             .skip(Number(skip))
             .limit(Number(limit))
             .populate([

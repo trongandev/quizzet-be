@@ -8,7 +8,6 @@ const NoticeSchema = new mongoose.Schema({
     },
     content: {
         type: String,
-        required: true, // Bắt buộc phải có nội dung
     },
     image: String,
     link: String,
