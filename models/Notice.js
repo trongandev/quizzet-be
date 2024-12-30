@@ -3,7 +3,6 @@ const mongoose = require("mongoose");
 const NoticeSchema = new mongoose.Schema({
     title: {
         type: String,
-        required: true, // Bắt buộc phải có tiêu đề
         trim: true, // Loại bỏ khoảng trắng thừa ở đầu/cuối
     },
     content: {

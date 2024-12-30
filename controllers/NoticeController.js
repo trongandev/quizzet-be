@@ -2,7 +2,7 @@ const Notice = require("../models/Notice");
 
 const Get = async (req, res) => {
     try {
-        const notice = await Notice.find();
+        const notice = await Notice.find().sort({ created_at: -1 });
         res.status(200).json({ ok: true, notice });
     } catch (error) {
         console.log(error);
