@@ -19,7 +19,7 @@ const ChatSchema = new mongoose.Schema({
             },
             created_at: {
                 type: Date,
-                default: new Date(),
+                default: Date.now,
             },
         },
     ],
@@ -28,7 +28,7 @@ const ChatSchema = new mongoose.Schema({
     },
     last_message_date: {
         type: Date,
-        default: new Date(),
+        default: Date.now,
     },
 });
 

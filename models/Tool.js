@@ -34,7 +34,7 @@ const ToolUserSchema = new mongoose.Schema({
     },
     created_at: {
         type: Date,
-        default: new Date(),
+        default: Date.now,
     },
 });
 
@@ -67,7 +67,7 @@ const ToolHistorySchema = new mongoose.Schema({
     },
     created_at: {
         type: Date,
-        default: new Date(),
+        default: Date.now,
     },
 });
 

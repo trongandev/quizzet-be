@@ -21,7 +21,7 @@ const FlashCardSchema = new mongoose.Schema({
     note: String,
     created_at: {
         type: Date,
-        default: new Date(),
+        default: Date.now,
     },
 });
 
@@ -50,7 +50,7 @@ const ListFlashCardSchema = new mongoose.Schema({
     ],
     created_at: {
         type: Date,
-        default: new Date(),
+        default: Date.now,
     },
 });
 

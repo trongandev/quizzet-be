@@ -1,39 +1,65 @@
 const { Message, ChatCommunity } = require("../models/ChatCommunity");
 const getMessages = async (req, res) => {
-    const { skip = 0, limit = 50 } = req.query;
+    let { skip = 0, limit = 50 } = req.query;
 
     try {
-        // Lấy phòng chat
-        const chatCommunity = await ChatCommunity.findOne({ room: "community" });
+        // Chuyển skip và limit sang số nguyên
+        skip = Number(skip);
+        limit = Number(limit);
 
-        if (!chatCommunity) {
-            return res.status(404).json({ message: "No messages found" });
+        // Kiểm tra giá trị skip và limit
+        if (isNaN(skip) || isNaN(limit) || skip < 0 || limit <= 0) {
+            return res.status(400).json({ message: "Invalid skip or limit parameters" });
         }
 
-        // Lấy tin nhắn theo giới hạn và skip
-        const totalMessages = await Message.countDocuments({ _id: { $in: chatCommunity.messages } }); // Tổng số tin nhắn
+        // Lấy thông tin phòng chat "community"
+        const chatCommunity = await ChatCommunity.findOne({ room: "community" }).lean();
+
+        if (!chatCommunity || !chatCommunity.messages || chatCommunity.messages.length === 0) {
+            return res.status(404).json({ message: "No messages found in the community room" });
+        }
+
+        // Tổng số tin nhắn trong phòng
+        const totalMessages = chatCommunity.messages.length;
+
+        // Tính toán số lượng tin nhắn còn lại
+        const remainingMessages = totalMessages - skip;
+
+        // Điều chỉnh limit nếu còn ít hơn
+        if (remainingMessages < limit) {
+            limit = remainingMessages;
+        }
+
+        // Lấy tin nhắn với skip và limit
         const messages = await Message.find({ _id: { $in: chatCommunity.messages } })
-            .sort({ createdAt: -1 })
-            .skip(Number(skip))
-            .limit(Number(limit))
+            .sort({ timestamp: -1 }) // Tin nhắn mới nhất trước
+            .skip(skip)
+            .limit(limit)
             .populate([
-                { path: "userId", select: "displayName profilePicture" }, // Populating User
+                { path: "userId", select: "displayName profilePicture" },
                 {
                     path: "replyTo",
                     select: "message userId unsend image",
-                    populate: { path: "userId", select: "_id displayName profilePicture" }, // Nested population for replyTo.userId
+                    populate: { path: "userId", select: "_id displayName profilePicture" },
                 },
-                { path: "reactions.userId", select: "displayName profilePicture" }, // Populating reactions
-            ]);
+                { path: "reactions.userId", select: "displayName profilePicture" },
+            ])
+            .lean();
 
         res.status(200).json({
+            success: true,
             messages,
-            hasMore: skip + limit < totalMessages,
+            hasMore: skip + limit < totalMessages, // Kiểm tra còn tin nhắn chưa load
+            remainingMessages,
         });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ success: false, error: error.message });
     }
 };
+
+module.exports = { getMessages };
+
+module.exports = { getMessages };
 
 const addMessage = async (req, res) => {
     const { userId, message, image, replyTo } = req.body;

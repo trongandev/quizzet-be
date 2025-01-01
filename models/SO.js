@@ -20,7 +20,7 @@ const SOSchema = new mongoose.Schema({
     },
     date: {
         type: Date,
-        default: new Date(),
+        default: Date.now,
     },
     lenght: {
         type: Number,
