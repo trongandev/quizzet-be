@@ -87,6 +87,7 @@ exports.updateFlashCard = async (req, res) => {
 
         return res.status(200).json({ message: "Flashcard đã được cập nhật", flashcard });
     } catch (error) {
+        console.log(error);
         return res.status(500).json({ message: "Lỗi khi cập nhật flashcard", error: error.message });
     }
 };

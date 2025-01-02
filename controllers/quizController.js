@@ -51,13 +51,67 @@ const getQuizAdmin = async (req, res) => {
 const getQuizById = async (req, res) => {
     try {
         const { slug } = req.params;
-        const quiz = await QuizModel.findOne({ slug: slug }).populate("uid", "displayName").populate("questions");
+        const quiz = await QuizModel.findOne({ slug: slug }).populate([
+            {
+                path: "uid",
+                select: "displayName profilePicture",
+            },
+            {
+                path: "comment.user_id",
+                select: "displayName profilePicture",
+                sort: { created_at: -1 },
+            },
+            {
+                path: "questions",
+            },
+        ]);
         res.status(200).json({ quiz });
     } catch (error) {
         console.log(error);
         res.status(404).json({ message: "Không tìm thấy Quiz", status: 404 });
     }
 };
+
+const CreateComment = async (req, res) => {
+    try {
+        const { rating, review, quiz_id } = req.body;
+        const { id } = req.user; // ID của người dùng từ token
+
+        if (!rating) {
+            return res.status(400).json({ message: "Vui lòng chọn sao" });
+        }
+
+        const quiz = await QuizModel.findById(quiz_id);
+        if (!quiz) {
+            return res.status(404).json({ message: "Quiz không tồn tại" });
+        }
+
+        // Kiểm tra xem user đã bình luận chưa
+        const existingCommentIndex = quiz.comment.findIndex((cmt) => cmt.user_id.toString() === id);
+
+        if (existingCommentIndex !== -1) {
+            // Nếu đã tồn tại, cập nhật bình luận
+            quiz.comment[existingCommentIndex].rating = rating;
+            quiz.comment[existingCommentIndex].review = review;
+            quiz.comment[existingCommentIndex].created_at = Date.now(); // Cập nhật thời gian
+        } else {
+            // Nếu chưa tồn tại, thêm bình luận mới
+            const newComment = {
+                user_id: id,
+                rating,
+                review,
+            };
+            quiz.comment.push(newComment);
+        }
+
+        await quiz.save();
+        res.status(201).json({ ok: true, message: "Bình luận thành công" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
+    }
+};
+
 const createQuiz = async (req, res) => {
     try {
         const { title, subject, email, content, img, noa, status, questions } = req.body;
@@ -259,6 +313,7 @@ module.exports = {
     getQuizAdmin,
     getQuizBySubject,
     getQuizById,
+    CreateComment,
     createQuiz,
     deleteQuiz,
     updateQuiz,

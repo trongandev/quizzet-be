@@ -43,6 +43,14 @@ const QuizSchema = new mongoose.Schema({
         ref: "DataQuiz",
         required: true,
     },
+    comment: [
+        {
+            user_id: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }, // ID người dùng
+            rating: { type: Number, required: true, min: 1, max: 5 }, // Điểm đánh giá (1-5)
+            review: { type: String }, // Nhận xét
+            created_at: { type: Date, default: Date.now }, // Ngày đánh giá
+        },
+    ],
 });
 
 const DataQuizSchema = new mongoose.Schema({
