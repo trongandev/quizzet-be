@@ -1,6 +1,28 @@
 const { Message, ChatCommunity } = require("../models/ChatCommunity");
+const CacheModel = require("../models/Cache");
+const setCache = async (key, data, ttl = 3600) => {
+    // lưu trữ trong 24 giờ
+    const expireAt = new Date(Date.now() + ttl * 1000 * 24);
+    await CacheModel.updateOne({ key }, { data: JSON.parse(JSON.stringify(data)), expireAt }, { upsert: true });
+};
+
+const getCache = async (key) => {
+    const cachedData = await CacheModel.findOne({ key });
+    return cachedData ? cachedData : null;
+};
+
+const deleteCache = async (key) => {
+    await CacheModel.deleteOne({ key });
+};
+
 const getMessages = async (req, res) => {
     let { skip = 0, limit = 50 } = req.query;
+
+    const cacheKey = `messages_${skip}_${limit}`;
+    const cachedData = await getCache(cacheKey);
+    if (cachedData) {
+        return res.status(200).json(cachedData.data);
+    }
 
     try {
         // Chuyển skip và limit sang số nguyên
@@ -46,6 +68,9 @@ const getMessages = async (req, res) => {
             ])
             .lean();
 
+        // Cache dữ liệu
+        await setCache(cacheKey, { success: true, messages, hasMore: skip + limit < totalMessages, remainingMessages });
+
         res.status(200).json({
             success: true,
             messages,
@@ -90,6 +115,7 @@ const addMessage = async (req, res) => {
                 populate: { path: "userId", select: "_id displayName profilePicture" }, // Nested population for replyTo.userId
             },
         ]);
+        await deleteCache("messages_0_50");
 
         res.status(201).send(populatedMessage);
     } catch (error) {
@@ -128,7 +154,7 @@ const addReaction = async (req, res) => {
         // Lưu cập nhật vào DB
         await message.save();
         const updatedMessage = await Message.findById(messageId).populate("reactions.userId", "_id displayName profilePicture");
-
+        await deleteCache("messages_0_50");
         res.status(200).json({ ok: true, reactions: updatedMessage.reactions });
     } catch (error) {
         console.error("Error in addReaction:", error);
@@ -145,6 +171,7 @@ const unsendMessage = async (req, res) => {
         if (!message) {
             return res.status(404).json({ ok: false, message: "Tin nhắn không tồn tại hoặc bạn không có quyền xóa" });
         }
+        await deleteCache("messages_0_50");
 
         res.status(200).json({ ok: true, message: "Gỡ tin nhắn thành công" });
     } catch (error) {
@@ -163,6 +190,7 @@ const editMessage = async (req, res) => {
         if (!result) {
             return res.status(404).json({ ok: false, message: "Tin nhắn không tồn tại hoặc bạn không có quyền xóa" });
         }
+        await deleteCache("messages_0_50");
 
         res.status(200).json({ ok: true, message: "Gỡ tin nhắn thành công" });
     } catch (error) {
