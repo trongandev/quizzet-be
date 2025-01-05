@@ -66,12 +66,29 @@ const loginUser = async (req, res) => {
             },
         };
 
-        const token = jwt.sign(payload, process.env.SECRET_KEY, { expiresIn: "1d" });
+        const token = jwt.sign(payload, process.env.SECRET_KEY, { expiresIn: "7d" });
+
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "strict",
+            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 ngày
+        });
+
         res.status(200).json({ message: "Đăng nhập thành công", token });
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
+};
+
+const logoutUser = (req, res) => {
+    res.clearCookie("token", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+    });
+    res.status(200).json({ ok: true, message: "Đăng xuất thành công" });
 };
 
 const forgetUser = async (req, res) => {
@@ -156,31 +173,10 @@ const changePassword = async (req, res) => {
     return res.status(200).json({ message: "Cập nhật mật khẩu thành công" });
 };
 
-async function getUserData(token) {
-    const res = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo?alt=json&access_token=${token}`);
-    const data = await res.json();
-    console.log(data);
-}
-
-const loginGoogle = async (req, res) => {
-    const oAuth2Client = new OAuth2Client(process.env.CLIENT_ID, process.env.CLIENT_SECRET, "postmessage");
-    const { tokens } = await oAuth2Client.getToken(req.body.code);
-    console.log(tokens);
-
-    res.json(tokens);
-};
-
-const refreshToken = async (req, res) => {
-    const user = new UserRefreshClient(clientId, clientSecret, req.body.refreshToken);
-    const { credentials } = await user.refreshAccessToken(); // optain new tokens
-    res.json(credentials);
-};
-
 module.exports = {
     registerUser,
     loginUser,
+    logoutUser,
     forgetUser,
-    loginGoogle,
-    refreshToken,
     changePassword,
 };

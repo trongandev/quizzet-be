@@ -10,6 +10,7 @@ const {
     updateListFlashCard,
     deleteListFlashCard,
     getAllFlashCardsPublic,
+    getAllFlashCards,
 } = require("../controllers/flashCardController");
 const { authMiddleware, checkAdminMiddleware } = require("../middleware/authorizationMiddleWare");
 const router = express.Router();
@@ -23,6 +24,7 @@ router.delete("/flashcards/:id", authMiddleware, deleteFlashCard); // Xóa flash
 
 // List Flashcard Routes
 router.post("/list-flashcards", authMiddleware, createListFlashCard); // Tạo danh sách flashcards mới
+router.get("/list-flashcards/admin", getAllFlashCards); // lấy tất cả flashcards
 router.get("/list-flashcards/public", getAllFlashCardsPublic); // lấy tất cả danh sách flashcards public
 router.get("/list-flashcards", authMiddleware, getAllListFlashCards); // Lấy tất cả danh sách flashcards của user
 router.get("/list-flashcards/:id", authMiddleware, getListFlashCardById); // Lấy danh sách flashcards theo ID

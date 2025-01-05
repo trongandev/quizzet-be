@@ -16,10 +16,10 @@ const authMiddleware = async (req, res, next) => {
             next();
         } catch (error) {
             console.log(error);
-            res.status(401).json({ message: "Xác thực không hợp lệ" });
+            res.status(401).json({ message: "Không tìm thấy token, vui lòng đăng nhập" });
         }
     } else {
-        res.status(401).json({ message: "Bạn chưa đăng nhập" });
+        res.status(401).json({ message: "Token không hợp lệ hoặc đã hết hạn" });
     }
 };
 

@@ -1,6 +1,7 @@
 const { default: slugify } = require("slugify");
 const { DataQuizModel, QuizModel } = require("../models/Quiz");
 const generateRandomSlug = require("../services/random-slug");
+const Notification = require("../models/Notification");
 
 const getQuiz = async (req, res) => {
     try {
@@ -71,7 +72,6 @@ const getQuizById = async (req, res) => {
         res.status(404).json({ message: "Không tìm thấy Quiz", status: 404 });
     }
 };
-
 const CreateComment = async (req, res) => {
     try {
         const { rating, review, quiz_id } = req.body;
@@ -94,6 +94,8 @@ const CreateComment = async (req, res) => {
             quiz.comment[existingCommentIndex].rating = rating;
             quiz.comment[existingCommentIndex].review = review;
             quiz.comment[existingCommentIndex].created_at = Date.now(); // Cập nhật thời gian
+            await quiz.save();
+            res.status(201).json({ ok: true, exist: true, id: quiz.comment[existingCommentIndex]._id, message: "Cập nhật bình luận thành công" });
         } else {
             // Nếu chưa tồn tại, thêm bình luận mới
             const newComment = {
@@ -102,10 +104,22 @@ const CreateComment = async (req, res) => {
                 review,
             };
             quiz.comment.push(newComment);
-        }
+            await quiz.save();
+            // Nếu người dùng không phải là tác giả của quiz, tạo thông báo
+            if (quiz.uid.toString() !== id.toString()) {
+                const newNotification = new Notification({
+                    recipient: quiz.uid,
+                    sender: id,
+                    type: "comment",
+                    link: `/quiz/detail/${quiz?.slug}#${id}`,
+                    content: "đã bình luận và đánh giá bài quiz của bạn.",
+                });
 
-        await quiz.save();
-        res.status(201).json({ ok: true, message: "Bình luận thành công" });
+                await newNotification.save();
+            }
+
+            res.status(201).json({ ok: true, message: "Bình luận thành công" });
+        }
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
@@ -162,6 +176,16 @@ const createQuiz = async (req, res) => {
         });
 
         const savedQuiz = await newQuiz.save();
+
+        const newNotification = new Notification({
+            recipient: id,
+            sender: id,
+            type: "system",
+            link: `/quiz/${savedQuiz.slug}`,
+            content: "Tạo bài quiz thành công, bài của bạn đang được xem xét để được hiển thị lên trang chủ.",
+        });
+
+        await newNotification.save();
 
         // Return successful response
         res.status(201).json({ message: "Tạo Quiz thành công", quiz: savedQuiz });
@@ -230,6 +254,44 @@ const updateQuiz = async (req, res) => {
         }
 
         res.status(200).json({ message: "Cập nhật Quiz thành công", updatedQuiz });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
+    }
+};
+
+const approveQuiz = async (req, res) => {
+    try {
+        const { status } = req.body;
+        const { _id } = req.params;
+        const { id } = req.user;
+        const quiz = await QuizModel.findByIdAndUpdate(_id, { status }, { new: true });
+        if (!quiz) {
+            return res.status(404).json({ message: "Không tìm thấy Quiz", status: 404 });
+        }
+        if (status) {
+            const newNotification = new Notification({
+                recipient: quiz.uid,
+                sender: id,
+                type: "approve",
+                link: `/quiz/${quiz.slug}`,
+                content: "Bài quiz của bạn đã được xét duyệt và được hiển thị lên trang chủ.",
+            });
+
+            await newNotification.save();
+            return res.status(200).json({ message: "Duyệt Quiz thành công" });
+        } else {
+            const newNotification = new Notification({
+                recipient: quiz.uid,
+                sender: id,
+                type: "reject",
+                link: `/quiz/${quiz.slug}`,
+                content: "Bài quiz của bạn đã bị ẩn khỏi trang chủ do vi phạm quy định của chúng tôi.",
+            });
+
+            await newNotification.save();
+            return res.status(200).json({ message: "Ẩn Quiz thành công" });
+        }
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
@@ -317,5 +379,6 @@ module.exports = {
     createQuiz,
     deleteQuiz,
     updateQuiz,
+    approveQuiz,
     DocumentBank,
 };

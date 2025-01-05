@@ -269,3 +269,22 @@ exports.getAllFlashCardsPublic = async (req, res) => {
         return res.status(500).json({ message: "Lỗi khi lấy danh sách flashcards", error: error.message });
     }
 };
+
+// Lấy tất cả flashcard
+exports.getAllFlashCards = async (req, res) => {
+    try {
+        const cacheKey = `publicFlashcardsAll`;
+        const cachedData = await getCache(cacheKey);
+        if (cachedData) {
+            return res.status(200).json(cachedData.data);
+        }
+        const publicFlashcards = await ListFlashCard.find().populate("userId", "_id displayName profilePicture").sort({ created_at: -1 });
+
+        await setCache(cacheKey, publicFlashcards);
+
+        return res.status(200).json(publicFlashcards);
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: "Lỗi khi lấy danh sách flashcards", error: error.message });
+    }
+};
