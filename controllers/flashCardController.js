@@ -21,7 +21,7 @@ const deleteCache = async (key) => {
 exports.createFlashCard = async (req, res) => {
     try {
         const { list_flashcard_id, title, define, type_of_word, transcription, example, note } = req.body;
-        console.log(req.body);
+        const { id } = req.user;
         // Kiểm tra nếu thiếu dữ liệu bắt buộc
         if (!title || !define) {
             return res.status(400).json({ message: "Thiếu thông tin bắt buộc (title, define)" });
@@ -47,6 +47,7 @@ exports.createFlashCard = async (req, res) => {
         await newFlashCard.save();
         await listFlashCard.save();
         await deleteCache(`list_flashcard_${list_flashcard_id}`);
+        await deleteCache(`listFlashcardUser_${id}`);
         return res.status(201).json({ message: "Flashcard đã được tạo thành công", flashcard: newFlashCard });
     } catch (error) {
         console.log(error);
@@ -106,7 +107,7 @@ exports.updateFlashCard = async (req, res) => {
         if (!flashcard) {
             return res.status(404).json({ message: "Không tìm thấy flashcard này để cập nhật" });
         }
-        await deleteCache(`list_flashcard_${flashcard.list_flashcard_id}`);
+        await deleteCache(`list_flashcard_${flashcard._id}`);
         return res.status(200).json({ message: "Flashcard đã được cập nhật", flashcard });
     } catch (error) {
         console.log(error);
@@ -197,6 +198,8 @@ exports.getListFlashCardById = async (req, res) => {
         const cacheKey = `listFlashCards_${id}`;
 
         const cachedData = await getCache(cacheKey);
+        console.log(cachedData);
+
         if (cachedData) {
             return res.status(200).json(cachedData.data);
         }
@@ -236,14 +239,17 @@ exports.updateListFlashCard = async (req, res) => {
 // Xóa danh sách flashcard
 exports.deleteListFlashCard = async (req, res) => {
     try {
-        const { id } = req.params;
-        const cacheKey = `listFlashCards_${id}`;
-        const listFlashCard = await ListFlashCard.findByIdAndDelete(id);
+        const _id = req.params.id;
+        const { id } = req.user;
+        const cacheKey = `listFlashCards_${_id}`;
+        const cacheKey1 = `listFlashcardUser_${id}`;
+        const listFlashCard = await ListFlashCard.findByIdAndDelete(_id);
 
         if (!listFlashCard) {
             return res.status(404).json({ message: "Không tìm thấy danh sách flashcards này để xóa" });
         }
         await deleteCache(cacheKey);
+        await deleteCache(cacheKey1);
 
         return res.status(200).json({ ok: true, message: "Danh sách flashcards đã được xóa thành công" });
     } catch (error) {
