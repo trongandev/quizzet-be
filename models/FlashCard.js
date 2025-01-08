@@ -19,6 +19,33 @@ const FlashCardSchema = new mongoose.Schema({
         },
     ],
     note: String,
+    status: {
+        type: String,
+        enum: ["learned", "remembered", "reviewing"], // Các trạng thái của từ
+        default: "reviewing", // Mặc định là cần ôn tập
+    },
+    progress: {
+        learnedTimes: {
+            type: Number,
+            default: 0, // Số lần đã học từ
+        },
+        percentage: {
+            type: Number,
+            default: 0, // % thuộc của từ
+        },
+    },
+    history: [
+        {
+            date: {
+                type: Date,
+                default: Date.now,
+            },
+            result: {
+                type: Boolean, // Kết quả đúng/sai
+                required: true,
+            },
+        },
+    ],
     created_at: {
         type: Date,
         default: Date.now,
@@ -48,6 +75,24 @@ const ListFlashCardSchema = new mongoose.Schema({
             ref: "FlashCard",
         },
     ],
+    progress: {
+        totalCards: {
+            type: Number,
+            default: 0, // Tổng số flashcard trong danh sách
+        },
+        rememberedCards: {
+            type: Number,
+            default: 0, // Số flashcard đã nhớ
+        },
+        percentage: {
+            type: Number,
+            default: 0, // % thuộc của cả danh sách
+        },
+    },
+    last_practice_date: {
+        type: Date, // Lưu ngày luyện tập gần nhất để không luyện tập quá nhiều
+        default: null,
+    },
     created_at: {
         type: Date,
         default: Date.now,

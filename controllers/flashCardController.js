@@ -55,6 +55,62 @@ exports.createFlashCard = async (req, res) => {
     }
 };
 
+// Tạo nhiều danh sách flashcard mới
+exports.createListFlashCards = async (req, res) => {
+    try {
+        const { list_flashcard_id, flashcards } = req.body; // Nhận danh sách flashcard từ request
+        const { id } = req.user;
+
+        // Kiểm tra nếu thiếu dữ liệu bắt buộc
+        if (!list_flashcard_id || !Array.isArray(flashcards) || flashcards.length === 0) {
+            return res.status(400).json({ message: "Thiếu thông tin bắt buộc (list_flashcard_id, flashcards)" });
+        }
+
+        const listFlashCard = await ListFlashCard.findById(list_flashcard_id);
+
+        if (!listFlashCard) {
+            return res.status(404).json({ message: "Tìm không thấy flashcard này, vui lòng f5 lại trang" });
+        }
+
+        const createdFlashcards = [];
+
+        // Lặp qua danh sách flashcard để tạo từng cái
+        for (const flashcardData of flashcards) {
+            const { title, define, type_of_word, transcription, example, note } = flashcardData;
+
+            // Kiểm tra thông tin bắt buộc
+            if (!title || !define) {
+                return res.status(400).json({ message: "flashcard cần có title và define" });
+            }
+
+            const newFlashCard = new FlashCard({
+                title,
+                define,
+                type_of_word,
+                transcription,
+                example,
+                note,
+            });
+
+            await newFlashCard.save(); // Lưu flashcard vào cơ sở dữ liệu
+            listFlashCard.flashcards.push(newFlashCard._id); // Thêm flashcard ID vào danh sách
+            createdFlashcards.push(newFlashCard); // Lưu flashcard đã tạo vào danh sách kết quả
+        }
+
+        await listFlashCard.save(); // Lưu danh sách flashcard
+        await deleteCache(`list_flashcard_${list_flashcard_id}`);
+        await deleteCache(`listFlashcardUser_${id}`);
+
+        return res.status(201).json({
+            message: "Các flashcard đã được tạo thành công",
+            flashcards: createdFlashcards,
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: "Lỗi khi tạo flashcards", error: error.message });
+    }
+};
+
 // Lấy flashcard theo ID
 exports.getFlashCardById = async (req, res) => {
     try {
@@ -100,14 +156,13 @@ exports.getFlashCardById = async (req, res) => {
 exports.updateFlashCard = async (req, res) => {
     try {
         const { id } = req.params;
-        const updateData = req.body;
-
+        const { id_flashcard, updateData } = req.body;
         const flashcard = await FlashCard.findByIdAndUpdate(id, updateData, { new: true });
 
         if (!flashcard) {
             return res.status(404).json({ message: "Không tìm thấy flashcard này để cập nhật" });
         }
-        await deleteCache(`list_flashcard_${flashcard._id}`);
+        await deleteCache(`list_flashcard_${id_flashcard}`);
         return res.status(200).json({ message: "Flashcard đã được cập nhật", flashcard });
     } catch (error) {
         console.log(error);
@@ -118,13 +173,17 @@ exports.updateFlashCard = async (req, res) => {
 // Xóa flashcard
 exports.deleteFlashCard = async (req, res) => {
     try {
-        const { id } = req.params;
-        const flashcard = await FlashCard.findByIdAndDelete(id);
+        const { list_flashcard_id } = req.body;
+        const { _id } = req.params;
+        const { id } = req.user;
+
+        const flashcard = await FlashCard.findByIdAndDelete(_id);
 
         if (!flashcard) {
             return res.status(404).json({ message: "Không tìm thấy từ này để xóa" });
         }
-        await deleteCache(`list_flashcard_${flashcard.list_flashcard_id}`);
+        await deleteCache(`list_flashcard_${list_flashcard_id}`);
+        await deleteCache(`listFlashcardUser_${id}`);
         return res.status(200).json({ ok: true, message: `Từ ${flashcard.title} đã được xóa thành công` });
     } catch (error) {
         return res.status(500).json({ message: "Lỗi khi xóa flashcard", error: error.message });
@@ -292,5 +351,102 @@ exports.getAllFlashCards = async (req, res) => {
     } catch (error) {
         console.log(error);
         return res.status(500).json({ message: "Lỗi khi lấy danh sách flashcards", error: error.message });
+    }
+};
+
+// Cập nhật tiến trình của FlashCard
+const updateFlashCardProgress = async (req, res) => {
+    try {
+        const { flashCardId } = req.params;
+        const { result } = req.body; // Kết quả học (true: đúng, false: sai)
+
+        const flashCard = await FlashCard.findById(flashCardId);
+        if (!flashCard) {
+            return res.status(404).json({ message: "FlashCard not found" });
+        }
+
+        // Cập nhật lịch sử và tiến trình
+        flashCard.progress.learnedTimes += 1;
+        flashCard.history.push({ result });
+        const correctCount = flashCard.history.filter((h) => h.result).length;
+        const totalAttempts = flashCard.history.length;
+        flashCard.progress.percentage = Math.round((correctCount / totalAttempts) * 100);
+
+        // Cập nhật trạng thái
+        if (flashCard.progress.percentage >= 80) {
+            flashCard.status = "remembered";
+        } else if (flashCard.progress.percentage >= 30) {
+            flashCard.status = "learned";
+        } else {
+            flashCard.status = "reviewing";
+        }
+
+        await flashCard.save();
+        res.status(200).json({ message: "Progress updated", flashCard });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Server error", error });
+    }
+};
+
+// Cập nhật tiến trình của ListFlashCard
+const updateListProgress = async (listId) => {
+    const list = await ListFlashCard.findById(listId).populate("flashcards");
+    if (!list) throw new Error("ListFlashCard not found");
+
+    const totalCards = list.flashcards.length;
+    const rememberedCards = list.flashcards.filter((fc) => fc.status === "remembered").length;
+    const percentage = Math.round((rememberedCards / totalCards) * 100);
+
+    list.progress = { totalCards, rememberedCards, percentage };
+    await list.save();
+};
+
+// Gọi cập nhật danh sách khi flashcard thay đổi
+exports.updateFlashCardAndListProgress = async (req, res) => {
+    try {
+        const { flashCardId, listId } = req.params;
+        const { result } = req.body;
+
+        await updateFlashCardProgress(req, res); // Cập nhật FlashCard
+        await updateListProgress(listId); // Cập nhật ListFlashCard
+
+        res.status(200).json({ message: "Progress updated for flashcard and list" });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Server error", error });
+    }
+};
+
+// Luyện tập flashcards trong một danh sách
+exports.practiceFlashCard = async (req, res) => {
+    try {
+        const { listId } = req.params; // ID của danh sách flashcards
+        const userId = req.user.id; // ID người dùng từ token (xác thực)
+
+        const list = await ListFlashCard.findOne({ _id: listId, userId });
+        if (!list) {
+            return res.status(404).json({ message: "List not found" });
+        }
+
+        // Kiểm tra ngày hiện tại với `last_practice_date`
+        const today = moment().startOf("day");
+        const lastPracticeDate = list.last_practice_date ? moment(list.last_practice_date).startOf("day") : null;
+
+        if (lastPracticeDate && today.isSame(lastPracticeDate)) {
+            // Đã luyện tập hôm nay
+            return res.status(200).json({ message: "You have already practiced today" });
+        }
+
+        // Nếu chưa luyện tập, cập nhật tiến trình và lưu ngày
+        list.last_practice_date = today;
+        await list.save();
+
+        // Xử lý logic cập nhật tiến trình flashcards (ví dụ tính % thuộc)
+        await updateListProgress(listId); // Hàm cập nhật tiến trình
+
+        res.status(200).json({ message: "Practice saved successfully", list });
+    } catch (error) {
+        res.status(500).json({ message: "Server error", error });
     }
 };
