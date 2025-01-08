@@ -15,6 +15,7 @@ const FlashCardSchema = new mongoose.Schema({
     example: [
         {
             en: String,
+            trans: String,
             vi: String,
         },
     ],

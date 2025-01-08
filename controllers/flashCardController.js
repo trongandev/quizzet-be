@@ -1,6 +1,18 @@
 const { FlashCard, ListFlashCard } = require("../models/FlashCard"); // Đảm bảo đường dẫn chính xác
 const CacheModel = require("../models/Cache");
 
+// Hằng số cho việc đánh giá progress
+const PROGRESS_THRESHOLDS = {
+    MASTERY: 80, // Ngưỡng để coi là đã thuộc (80%)
+    NEEDS_REVIEW: 30, // Ngưỡng để đưa vào danh sách ôn tập (<30%)
+    MIN_CORRECT_ANSWERS: 2, // Số lần trả lời đúng tối thiểu
+};
+
+const REVIEW_INTERVALS = {
+    UNKNOWN: 3, // Số lần ôn tập cho từ chưa biết
+    FAMILIAR: 2, // Số lần ôn tập cho từ tương đối
+};
+
 const setCache = async (key, data, ttl = 3600) => {
     const expireAt = new Date(Date.now() + ttl * 1000);
     await CacheModel.updateOne({ key }, { data: JSON.parse(JSON.stringify(data)), expireAt }, { upsert: true });

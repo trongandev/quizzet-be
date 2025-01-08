@@ -34,6 +34,6 @@ router.put("/list-flashcards/:id", authMiddleware, updateListFlashCard); // Cậ
 router.delete("/list-flashcards/:id", authMiddleware, deleteListFlashCard); // Xóa danh sách flashcards
 
 // tính năng
-// router.get("/list-flashcards/admin", authMiddleware, checkAdminMiddleware, ); // lấy tất cả flashcards
+router.get("/list-flashcards/admin", authMiddleware); // lấy tất cả flashcards
 
 module.exports = router;
