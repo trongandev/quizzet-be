@@ -121,7 +121,6 @@ const addMessage = async (req, res) => {
 
 const addReaction = async (req, res) => {
     const { messageId, userId: userId, emoji } = req.body;
-    console.log(req.body);
     try {
         // Tìm tin nhắn dựa trên `messageId`
         const message = await Message.findById(messageId);

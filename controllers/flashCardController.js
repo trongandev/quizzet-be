@@ -269,7 +269,6 @@ exports.getListFlashCardById = async (req, res) => {
         const cacheKey = `listFlashCards_${id}`;
 
         const cachedData = await getCache(cacheKey);
-        console.log(cachedData);
 
         if (cachedData) {
             return res.status(200).json(cachedData.data);

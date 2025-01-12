@@ -50,7 +50,6 @@ const CreateChat = async (req, res) => {
     try {
         const { participants } = req.body;
         const { id } = req.user;
-        console.log(participants);
         if (!participants || participants.length !== 2 || !participants.includes(id)) {
             return res.status(400).json({ message: "Vui lòng cung cấp thông tin người tham gia hợp lệ" });
         }
@@ -90,7 +89,6 @@ const Update = async (req, res) => {
     try {
         const { id: chatId } = req.params;
         const { message, image, userId, replyTo } = req.body;
-        console.log(req.body);
         if (!message) {
             return res.status(400).json({ message: "Vui lòng cung cấp nội dung tin nhắn" });
         }
