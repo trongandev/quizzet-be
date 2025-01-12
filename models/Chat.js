@@ -1,12 +1,12 @@
 const mongoose = require("mongoose");
 
 const MessageSchema = new mongoose.Schema({
-    sender: {
+    userId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
         required: true,
     },
-    text: {
+    message: {
         type: String,
         required: true,
     },
@@ -26,14 +26,14 @@ const MessageSchema = new mongoose.Schema({
     },
     reactions: [
         {
-            sender: {
+            userId: {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "User",
             },
             emoji: String,
         },
     ],
-    created_at: {
+    timestamp: {
         type: Date,
         default: Date.now,
     },

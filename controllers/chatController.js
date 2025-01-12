@@ -89,15 +89,15 @@ const CreateChat = async (req, res) => {
 const Update = async (req, res) => {
     try {
         const { id: chatId } = req.params;
-        const { text, image, userId, replyTo } = req.body;
+        const { message, image, userId, replyTo } = req.body;
         console.log(req.body);
-        if (!text) {
+        if (!message) {
             return res.status(400).json({ message: "Vui lòng cung cấp nội dung tin nhắn" });
         }
 
         const newMessage = new Message({
-            sender: userId,
-            text: text || "",
+            userId,
+            message: message || "",
             image: image || null,
             replyTo: replyTo || null,
         });
@@ -108,7 +108,7 @@ const Update = async (req, res) => {
             chatId,
             {
                 $push: { messages: newMessage._id }, // Thêm tin nhắn mới vào mảng
-                last_message: text || "[Image]",
+                last_message: message || "[Image]",
                 last_message_date: new Date(),
             },
             { new: true }
