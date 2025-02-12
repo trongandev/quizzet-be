@@ -11,7 +11,7 @@ const registerUser = async (req, res) => {
     try {
         const { displayName, email, password } = req.body;
         if (!displayName || !email || !password) {
-            return res.status(400).json({ message: "Vui lòng điền đẩy đủ" });
+            return res.status(400).json({ message: "Vui lòng điền đẩy đủ thông tin!" });
         }
 
         if (!validator.isEmail(email)) {
