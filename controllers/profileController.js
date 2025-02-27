@@ -1,7 +1,6 @@
 const User = require("../models/User");
 const { QuizModel, DataQuizModel } = require("../models/Quiz");
-const HTML_TEMPLATE = require("../services/html-template");
-const SENDMAIL = require("../services/mail");
+const { sendFeedbackMail, sendOTPMail } = require("../services/nodemailer");
 const getAllProfile = async (req, res) => {
     try {
         const user = await User.find().sort({ created_at: -1 }).select("-password").populate("displayName profilePicture");
@@ -114,17 +113,7 @@ const sendMail = async (req, res) => {
         user.expire_otp = Date.now() + 1000 * 60 * 10;
         user.otp = otp;
         await user.save();
-
-        const options = {
-            to: user.email, // receiver email
-            subject: "Xác nhận mã OTP trên hệ thống trongan.site", // Subject line
-            html: HTML_TEMPLATE(user.displayName, user.otp, "Mã OTP", "Mã OTP chỉ có hiệu lực trong 10 phút"),
-        };
-
-        SENDMAIL(options, (info) => {
-            console.log("Email sent successfully");
-            console.log("MESSAGE ID: ", info.messageId);
-        });
+        await sendOTPMail(user);
 
         res.status(200).json({ message: "Gửi mail thành công", ok: true });
     } catch (error) {
@@ -156,6 +145,20 @@ const checkOTP = async (req, res) => {
     }
 };
 
+const sendMailContribute = async (req, res) => {
+    try {
+        const { username, feedback } = req.body;
+        if (!feedback) {
+            return res.status(400).json({ message: "Vui lòng điền đẩy đủ nội dung trước khi gửi" });
+        }
+
+        await sendFeedbackMail(username, feedback);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
+    }
+};
+
 module.exports = {
     getAllProfile,
     getProfile,
@@ -164,4 +167,5 @@ module.exports = {
     updateProfile,
     sendMail,
     checkOTP,
+    sendMailContribute,
 };

@@ -35,8 +35,8 @@ exports.createFlashCard = async (req, res) => {
         const { list_flashcard_id, title, define, type_of_word, transcription, example, note } = req.body;
         const { id } = req.user;
         // Kiểm tra nếu thiếu dữ liệu bắt buộc
-        if (!title || !define) {
-            return res.status(400).json({ message: "Thiếu thông tin bắt buộc (title, define)" });
+        if (!title) {
+            return res.status(400).json({ message: "Thiếu thông tin bắt buộc (title)" });
         }
 
         const newFlashCard = new FlashCard({

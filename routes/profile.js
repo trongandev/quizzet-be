@@ -1,5 +1,5 @@
 const express = require("express");
-const { getAllProfile, getProfile, findProfileByName, getProfileById, updateProfile, sendMail, checkOTP } = require("../controllers/profileController");
+const { getAllProfile, getProfile, findProfileByName, getProfileById, updateProfile, sendMail, checkOTP, sendMailContribute } = require("../controllers/profileController");
 const { authMiddleware, checkAdminMiddleware } = require("../middleware/authorizationMiddleWare");
 const router = express.Router();
 
@@ -10,5 +10,6 @@ router.get("/", authMiddleware, getProfile);
 router.get("/findbyname/:text", authMiddleware, findProfileByName);
 router.get("/:uid", getProfileById);
 router.patch("/", authMiddleware, updateProfile);
+router.post("/feedback", sendMailContribute);
 
 module.exports = router;

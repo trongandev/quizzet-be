@@ -2,10 +2,11 @@ const jwt = require("jsonwebtoken");
 const validator = require("validator");
 const User = require("../models/User");
 const bcrypt = require("bcrypt");
-const HTML_TEMPLATE = require("../services/html-template");
+const { HTML_TEMPLATE } = require("../services/html-template");
 const SENDMAIL = require("../services/mail");
 const express = require("express");
 const { OAuth2Client } = require("google-auth-library");
+const { sendForgetPasswordMail } = require("../services/nodemailer");
 
 const registerUser = async (req, res) => {
     try {
@@ -111,17 +112,7 @@ const forgetUser = async (req, res) => {
         const hashedPassword = await bcrypt.hash(new_password, 10);
         user.password = hashedPassword;
         await user.save();
-
-        const options = {
-            to: user.email, // receiver email
-            subject: "Quên mật khẩu", // Subject line
-            html: HTML_TEMPLATE(user.displayName, new_password, "Mật khẩu tạm thời", "Vui lòng đăng nhập để thay đổi mật khẩu mới"),
-        };
-
-        SENDMAIL(options, (info) => {
-            console.log("Email sent successfully");
-            console.log("MESSAGE ID: ", info.messageId);
-        });
+        await sendForgetPasswordMail(user.email, new_password);
 
         res.status(200).json({ message: "Gửi thành công, vui lòng kiểm tra email của bạn" });
     } catch (error) {

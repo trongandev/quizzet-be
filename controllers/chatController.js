@@ -17,6 +17,7 @@ const Get = async (req, res) => {
         // Đếm số lượng chưa đọc
         const unreadCount = await Chat.countDocuments({
             is_read: false,
+            userId: id,
         });
 
         res.status(200).json({ chats, ok: true, page, limit, unreadCount });

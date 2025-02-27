@@ -45,7 +45,7 @@ const createHistory = async (req, res) => {
         const { id } = req.user;
 
         // Validate required fields
-        if (!quiz_id || !time || score === undefined || !questions) {
+        if (!quiz_id || !time || score === undefined) {
             return res.status(400).json({
                 message: "Missing required fields",
                 ok: false,
@@ -69,7 +69,7 @@ const createHistory = async (req, res) => {
         const newDataHistory = new DataHistoryModel({
             data_history: questions,
         });
-        const saveDataHistory = await newDataHistory.save();
+        await newDataHistory.save();
 
         // Create history entry
         const newHistory = new HistoryModel({
@@ -77,15 +77,15 @@ const createHistory = async (req, res) => {
             quiz_id,
             time,
             score,
-            questions: saveDataHistory._id,
+            questions: newDataHistory._id.toString(),
         });
 
-        const saveHistory = await newHistory.save();
+        await newHistory.save();
 
         return res.status(201).json({
             ok: true,
             message: "Gửi bài thành công",
-            id_history: saveHistory._id.toString(),
+            id_history: newHistory._id.toString(),
         });
     } catch (error) {
         console.error("Create History Error:", error);

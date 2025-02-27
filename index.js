@@ -25,11 +25,15 @@ dotenv.config();
 const session = require("express-session");
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
+const errorHandler = require("./middleware/errorHandler");
+const compression = require("compression");
 
 connectDB();
 
 app.use(cors());
 app.use(express.json({ limit: "50mb" }));
+// dùng để nén dữ liệu trước khi gửi về client
+app.use(compression());
 
 // Cấu hình session
 app.use(
