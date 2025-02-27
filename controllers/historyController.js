@@ -43,17 +43,35 @@ const createHistory = async (req, res) => {
     try {
         const { quiz_id, time, score, questions } = req.body;
         const { id } = req.user;
-        const quiz = await QuizModel.findById(quiz_id);
-        if (quiz) {
-            quiz.noa++;
-            await quiz.save();
+
+        // Validate required fields
+        if (!quiz_id || !time || score === undefined || !questions) {
+            return res.status(400).json({
+                message: "Missing required fields",
+                ok: false,
+            });
         }
+
+        // Validate quiz existence
+        const quiz = await QuizModel.findById(quiz_id);
+        if (!quiz) {
+            return res.status(404).json({
+                message: "Quiz not found",
+                ok: false,
+            });
+        }
+
+        // Update quiz attempts
+        quiz.noa = (quiz.noa || 0) + 1;
+        await quiz.save();
+
+        // Create data history
         const newDataHistory = new DataHistoryModel({
             data_history: questions,
         });
-
         const saveDataHistory = await newDataHistory.save();
-        // Tạo đối tượng Quiz mới từ thông tin gửi lên
+
+        // Create history entry
         const newHistory = new HistoryModel({
             user_id: id,
             quiz_id,
@@ -62,14 +80,19 @@ const createHistory = async (req, res) => {
             questions: saveDataHistory._id,
         });
 
-        // Lưu đối tượng vào database
         const saveHistory = await newHistory.save();
 
-        // Trả về response
-        res.status(201).json({ ok: true, message: "Gửi bài thành công", id_history: saveHistory._id });
+        return res.status(201).json({
+            ok: true,
+            message: "Gửi bài thành công",
+            id_history: saveHistory._id.toString(),
+        });
     } catch (error) {
-        console.log(error);
-        res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
+        console.error("Create History Error:", error);
+        return res.status(500).json({
+            message: "Server gặp lỗi, vui lòng thử lại sau ít phút",
+            error: error.message,
+        });
     }
 };
 
