@@ -2,10 +2,6 @@ const jwt = require("jsonwebtoken");
 const validator = require("validator");
 const User = require("../models/User");
 const bcrypt = require("bcrypt");
-const { HTML_TEMPLATE } = require("../services/html-template");
-const SENDMAIL = require("../services/mail");
-const express = require("express");
-const { OAuth2Client } = require("google-auth-library");
 const { sendForgetPasswordMail } = require("../services/nodemailer");
 
 const registerUser = async (req, res) => {
@@ -67,13 +63,13 @@ const loginUser = async (req, res) => {
             },
         };
 
-        const token = jwt.sign(payload, process.env.SECRET_KEY, { expiresIn: "7d" });
+        const token = jwt.sign(payload, process.env.SECRET_KEY, { expiresIn: "30d" });
 
         res.cookie("token", token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             sameSite: "strict",
-            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 ngày
+            maxAge: 30 * 24 * 60 * 60 * 1000, // 30day
         });
 
         res.status(200).json({ message: "Đăng nhập thành công", token });

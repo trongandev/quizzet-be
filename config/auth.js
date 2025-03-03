@@ -5,9 +5,9 @@ const User = require("../models/User");
 passport.use(
     new GoogleStrategy(
         {
-            clientID: process.env.CLIENT_ID, // Thay bằng Client ID từ Google
-            clientSecret: process.env.CLIENT_SECRET, // Thay bằng Client Secret từ Google
-            callbackURL: "https://quizzet-be.vercel.app/api/auth/google/callback",
+            clientID: process.env.GOOGLE_LOGIN_CLIENT_ID, // Thay bằng Client ID từ Google
+            clientSecret: process.env.GOOGLE_LOGIN_CLIENT_SECRET, // Thay bằng Client Secret từ Google
+            callbackURL: `https://quizzet-be.vercel.app/api/auth/google/callback`,
             passReqToCallback: true, // Thêm dòng này
             scope: ["profile", "email", "openid"], // Đầy đủ scope
         },

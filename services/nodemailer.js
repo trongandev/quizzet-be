@@ -5,11 +5,10 @@ const dotenv = require("dotenv");
 dotenv.config();
 const OAuth2 = google.auth.OAuth2;
 
-const { CLIENT_ID, CLIENT_SECRET, REDIRECT_URI, GOOGLE_REFRESH_TOKEN, MAIL_SERVER } = process.env;
+const { MAIL_CLIENT_ID, MAIL_CLIENT_SECRET, REDIRECT_URI, MAIL_REFRESH_TOKEN, MAIL_SERVER } = process.env;
+const OAuth2Client = new OAuth2(MAIL_CLIENT_ID, MAIL_CLIENT_SECRET, MAIL_REFRESH_TOKEN, REDIRECT_URI);
 
-const OAuth2Client = new OAuth2(CLIENT_ID, CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, REDIRECT_URI);
-
-OAuth2Client.setCredentials({ refresh_token: GOOGLE_REFRESH_TOKEN });
+OAuth2Client.setCredentials({ refresh_token: MAIL_REFRESH_TOKEN });
 
 const accessToken = OAuth2Client.getAccessToken();
 
@@ -21,10 +20,10 @@ let transporter = nodemailer.createTransport({
     auth: {
         type: "OAuth2",
         user: MAIL_SERVER,
-        clientId: CLIENT_ID,
+        clientId: MAIL_CLIENT_ID,
         accessToken,
-        clientSecret: CLIENT_SECRET,
-        refreshToken: GOOGLE_REFRESH_TOKEN,
+        clientSecret: MAIL_CLIENT_SECRET,
+        refreshToken: MAIL_REFRESH_TOKEN,
     },
 });
 
