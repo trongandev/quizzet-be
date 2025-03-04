@@ -68,7 +68,7 @@ app.get(
         // Tạo token như bình thường
         const token = jwt.sign({ id: req.user._id }, process.env.SECRET_KEY, { expiresIn: "1d" });
 
-        res.redirect(`${process.env.CLIENT_URL}/login?token=${token}`);
+        res.redirect(`https://trongan.site/login?token=${token}`);
     }
 );
 
