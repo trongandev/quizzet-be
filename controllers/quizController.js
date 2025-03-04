@@ -81,7 +81,7 @@ const CreateComment = async (req, res) => {
             return res.status(400).json({ message: "Vui lòng chọn sao" });
         }
 
-        const quiz = await QuizModel.findById(quiz_id._id);
+        const quiz = await QuizModel.findById(quiz_id);
         if (!quiz) {
             return res.status(404).json({ message: "Quiz không tồn tại" });
         }
