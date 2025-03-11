@@ -1,6 +1,6 @@
 const User = require("../models/User");
 const { QuizModel, DataQuizModel } = require("../models/Quiz");
-const { sendFeedbackMail, sendOTPMail } = require("../services/nodemailer");
+// const { sendFeedbackMail, sendOTPMail } = require("../services/nodemailer");
 const getAllProfile = async (req, res) => {
     try {
         const user = await User.find().sort({ created_at: -1 }).select("-password").populate("displayName profilePicture");
@@ -94,28 +94,29 @@ const updateProfile = async (req, res) => {
 
 const sendMail = async (req, res) => {
     try {
-        const { id } = req.user;
-        if (!id) {
-            return res.status(400).json({ msg: "Thiếu userId trong tham số" });
-        }
-        const user = await User.findById(id);
-        if (!user) {
-            return res.status(404).json({ msg: "Người dùng không tìm thấy" });
-        }
+        // const { id } = req.user;
+        // if (!id) {
+        //     return res.status(400).json({ msg: "Thiếu userId trong tham số" });
+        // }
+        // const user = await User.findById(id);
+        // if (!user) {
+        //     return res.status(404).json({ msg: "Người dùng không tìm thấy" });
+        // }
 
-        if (user.verify) {
-            return res.status(400).json({ message: "Tài khoản đã được xác thực" });
-        }
+        // if (user.verify) {
+        //     return res.status(400).json({ message: "Tài khoản đã được xác thực" });
+        // }
 
-        //create random otp code
-        const otp = Math.floor(100000 + Math.random() * 900000);
-        //thời hạn 10 phút
-        user.expire_otp = Date.now() + 1000 * 60 * 10;
-        user.otp = otp;
-        await user.save();
-        await sendOTPMail(user);
+        // //create random otp code
+        // const otp = Math.floor(100000 + Math.random() * 900000);
+        // //thời hạn 10 phút
+        // user.expire_otp = Date.now() + 1000 * 60 * 10;
+        // user.otp = otp;
+        // await user.save();
+        // await sendOTPMail(user);
+        return res.status(400).json({ message: "Tính năng đang bảo trì" });
 
-        res.status(200).json({ message: "Gửi mail thành công", ok: true });
+        // res.status(200).json({ message: "Gửi mail thành công", ok: true });
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
@@ -151,8 +152,9 @@ const sendMailContribute = async (req, res) => {
         if (!feedback) {
             return res.status(400).json({ message: "Vui lòng điền đẩy đủ nội dung trước khi gửi" });
         }
+        return res.status(400).json({ message: "Tính năng đang bảo trì" });
 
-        await sendFeedbackMail(username, feedback);
+        // await sendFeedbackMail(username, feedback);
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
