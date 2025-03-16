@@ -1,6 +1,8 @@
 const { FlashCard, ListFlashCard } = require("../models/FlashCard"); // Đảm bảo đường dẫn chính xác
 const CacheModel = require("../models/Cache");
-
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+const dotenv = require("dotenv");
+dotenv.config();
 // Hằng số cho việc đánh giá progress
 const PROGRESS_THRESHOLDS = {
     MASTERY: 80, // Ngưỡng để coi là đã thuộc (80%)
@@ -27,6 +29,45 @@ const deleteCache = async (key) => {
     await CacheModel.deleteOne({ key });
 };
 
+// AI create Flashcard
+
+const genAI = new GoogleGenerativeAI(process.env.API_KEY_AI);
+const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+
+exports.createFlashCardAI = async (req, res) => {
+    try {
+        const { list_flashcard_id, prompt } = req.body;
+        const { id } = req.user;
+
+        const result = await model.generateContent(prompt);
+        const parse = result.response
+            .text()
+            .replace(/```json/g, "")
+            .replace(/```/g, "");
+
+        const data = JSON.parse(parse);
+
+        const newFlashCard = new FlashCard(data);
+
+        const listFlashCard = await ListFlashCard.findById(list_flashcard_id);
+
+        if (!listFlashCard) {
+            return res.status(404).json({ message: "List FlashCard not found" });
+        }
+
+        listFlashCard.flashcards.push(newFlashCard._id);
+        await newFlashCard.save();
+        await listFlashCard.save();
+        await deleteCache(`list_flashcard_${list_flashcard_id}`);
+        await deleteCache(`listFlashcardUser_${id}`);
+
+        return res.status(200).json({ ok: true, message: "Flashcard đã được tạo thành công", flashcard: newFlashCard });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: "Lỗi khi tạo flashcard", error: error.message });
+    }
+};
+
 // --- FlashCard Controller ---
 
 // Tạo một flashcard mới
@@ -36,7 +77,7 @@ exports.createFlashCard = async (req, res) => {
         const { id } = req.user;
         // Kiểm tra nếu thiếu dữ liệu bắt buộc
         if (!title) {
-            return res.status(400).json({ message: "Thiếu thông tin bắt buộc (title)" });
+            return res.status(400).json({ message: "Thiếu thông tin bắt buộc (tên từ, định nghĩa)" });
         }
 
         const newFlashCard = new FlashCard({
@@ -70,13 +111,21 @@ exports.createFlashCard = async (req, res) => {
 // Tạo nhiều danh sách flashcard mới
 exports.createListFlashCards = async (req, res) => {
     try {
-        const { list_flashcard_id, flashcards } = req.body; // Nhận danh sách flashcard từ request
+        const { list_flashcard_id, prompt } = req.body; // Nhận danh sách flashcard từ request
         const { id } = req.user;
 
         // Kiểm tra nếu thiếu dữ liệu bắt buộc
-        if (!list_flashcard_id || !Array.isArray(flashcards) || flashcards.length === 0) {
-            return res.status(400).json({ message: "Thiếu thông tin bắt buộc (list_flashcard_id, flashcards)" });
+        if (!list_flashcard_id) {
+            return res.status(400).json({ message: "Không có id flashcard này!!" });
         }
+
+        const result = await model.generateContent(prompt);
+        const parse = result.response
+            .text()
+            .replace(/```json/g, "")
+            .replace(/```/g, "");
+
+        const data = JSON.parse(parse);
 
         const listFlashCard = await ListFlashCard.findById(list_flashcard_id);
 
@@ -87,7 +136,7 @@ exports.createListFlashCards = async (req, res) => {
         const createdFlashcards = [];
 
         // Lặp qua danh sách flashcard để tạo từng cái
-        for (const flashcardData of flashcards) {
+        for (const flashcardData of data) {
             const { title, define, type_of_word, transcription, example, note } = flashcardData;
 
             // Kiểm tra thông tin bắt buộc
