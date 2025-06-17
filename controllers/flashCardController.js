@@ -164,7 +164,8 @@ exports.createListFlashCards = async (req, res) => {
         await deleteCache(`list_flashcard_${list_flashcard_id}`);
         await deleteCache(`listFlashcardUser_${id}`);
 
-        return res.status(201).json({
+        return res.status(200).json({
+            ok: true,
             message: "Các flashcard đã được tạo thành công",
             flashcards: createdFlashcards,
         });
