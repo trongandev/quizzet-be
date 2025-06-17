@@ -6,6 +6,10 @@ const SOSchema = new mongoose.Schema({
         ref: "User",
         required: true,
     },
+    version: {
+        type: Number,
+        default: 1,
+    },
     slug: {
         type: String,
         required: true,

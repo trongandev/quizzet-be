@@ -5,10 +5,9 @@ const authMiddleware = async (req, res, next) => {
     if (token) {
         try {
             const decoded = jwt.verify(token, process.env.SECRET_KEY); // Xác thực token
-            if (decoded.user) {
-                const user = await User.findById(decoded.user.id);
-
-                req.user = { id: user._id.toString(), role: user.role };
+            if (decoded?.user) {
+                const user = await User.findById(decoded?.user?.id);
+                req.user = { id: user?._id.toString(), role: user?.role };
             } else if (decoded.id) {
                 const user = await User.findById(decoded.id);
                 req.user = { id: user._id.toString(), role: user.role };

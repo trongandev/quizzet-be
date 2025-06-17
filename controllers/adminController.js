@@ -15,6 +15,7 @@ const addSubOutline = async (req, res) => {
         const saveDataSO = await newDataSO.save();
         const newSO = new SOModel({
             user_id: id,
+            version: 2,
             slug: slugify(title, { lower: true }) + "-" + generateRandomSlug(),
             title,
             image,

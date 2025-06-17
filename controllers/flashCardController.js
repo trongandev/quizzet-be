@@ -126,7 +126,9 @@ exports.createListFlashCards = async (req, res) => {
             .replace(/```/g, "");
 
         const data = JSON.parse(parse);
-
+        if (!Array.isArray(data) || data.length === 0) {
+            return res.status(400).json({ message: "Dữ liệu flashcard không hợp lệ hoặc rỗng" });
+        }
         const listFlashCard = await ListFlashCard.findById(list_flashcard_id);
 
         if (!listFlashCard) {
