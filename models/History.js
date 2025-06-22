@@ -18,25 +18,20 @@ const HistorySchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
+    total_questions: {
+        type: Number,
+        required: true,
+    },
     time: {
         type: Number,
         required: true,
     },
-    questions: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "DataHistory",
+    userAnswers: {
+        type: Map,
+        of: String,
         required: true,
+        // Ví dụ: {"1": "2", "2": "1", "3": "2", ...}
     },
 });
 
-const DataHistorySchema = new mongoose.Schema({
-    data_history: {
-        type: Array,
-        required: true,
-    },
-});
-
-module.exports = {
-    HistoryModel: mongoose.model("History", HistorySchema),
-    DataHistoryModel: mongoose.model("DataHistory", DataHistorySchema),
-};
+module.exports = mongoose.model("History", HistorySchema);

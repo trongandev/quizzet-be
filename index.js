@@ -66,9 +66,13 @@ app.get(
     }),
     (req, res) => {
         // Tạo token như bình thường
+        console.log(req);
         const token = jwt.sign({ id: req.user._id }, process.env.SECRET_KEY, { expiresIn: "1d" });
 
-        res.redirect(`https://quizzet.site/login?token=${token}`);
+        // Sử dụng CLIENT_URL từ environment variable
+        const clientUrl = process.env.CLIENT_URL;
+
+        res.redirect(`${clientUrl}/login?token=${token}`);
     }
 );
 
@@ -94,14 +98,16 @@ app.use("/api", flashCardRoutes);
 app.use("/api/report", reportRoutes);
 app.use("/api/notify", notifyRoutes);
 
-// phát âm thanh bằng proxy để tránh lỗi CORS
-app.get("/api/proxy", async (req, res) => {
-    const { audio, type } = req.query;
-    const response = await fetch(`https://dict.youdao.com/dictvoice?audio=${audio}&type=${type}`);
-    const data = await response.arrayBuffer();
-    res.set("Content-Type", "audio/mpeg");
-    res.send(Buffer.from(data));
-});
+// // phát âm thanh bằng proxy để tránh lỗi CORS
+// app.get("/api/proxy", async (req, res) => {
+//     const { audio, type } = req.query;
+//     const response = await fetch(`https://dict.youdao.com/dictvoice?audio=${audio}&type=${type}`);
+//     // const response = await fetch(`https://dict.youdao.com/voice?audio=hello, my name is an&type=${type}`);
+//     const data = await response.arrayBuffer();
+//     console.log(data);
+//     res.set("Content-Type", "audio/mpeg");
+//     res.send(Buffer.from(data));
+// });
 
 const PORT = process.env.PORT || 5001;
 

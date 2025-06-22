@@ -299,7 +299,7 @@ exports.getAllListFlashCards = async (req, res) => {
             return res.status(200).json({ ok: true, listFlashCards: cachedData.data });
         }
 
-        const listFlashCards = await ListFlashCard.find({ userId: id }).populate("flashcards", "_id").populate("userId", "_id displayName profilePicture");
+        const listFlashCards = await ListFlashCard.find({ userId: id }).sort({ created_at: -1 }).populate("flashcards", "_id").populate("userId", "_id displayName profilePicture");
 
         if (!listFlashCards) {
             return res.status(404).json({ message: "Không tìm thấy danh sách flashcards cho người dùng này" });
@@ -362,6 +362,7 @@ exports.updateListFlashCard = async (req, res) => {
 exports.deleteListFlashCard = async (req, res) => {
     try {
         const _id = req.params.id;
+        console.log(_id);
         const { id } = req.user;
         const cacheKey = `listFlashCards_${_id}`;
         const cacheKey1 = `listFlashcardUser_${id}`;

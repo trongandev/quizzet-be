@@ -30,6 +30,10 @@ const QuizSchema = new mongoose.Schema({
         type: Number,
         default: 0, // Số lần làm bài
     },
+    view: {
+        type: Number,
+        default: 0, // Số lượt xem
+    },
     date: {
         type: Date,
         default: Date.now,
@@ -47,6 +51,7 @@ const QuizSchema = new mongoose.Schema({
         {
             user_id: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }, // ID người dùng
             rating: { type: Number, required: true, min: 1, max: 5 }, // Điểm đánh giá (1-5)
+            helpful: { type: Number, default: 0 }, // Số lượt hữu ích
             review: { type: String }, // Nhận xét
             created_at: { type: Date, default: Date.now }, // Ngày đánh giá
         },

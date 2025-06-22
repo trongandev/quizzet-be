@@ -1,4 +1,4 @@
-const { HistoryModel, DataHistoryModel } = require("../models/History");
+const HistoryModel = require("../models/History");
 const { DataQuizModel, QuizModel } = require("../models/Quiz");
 
 const UserModel = require("../models/User");
@@ -6,7 +6,7 @@ const UserModel = require("../models/User");
 const getHistory = async (req, res) => {
     try {
         const { id } = req.user;
-        const history = await HistoryModel.find({ user_id: id }).populate("questions", "data_history").sort({ date: -1 });
+        const history = await HistoryModel.find({ user_id: id }).populate("quiz_id", "title subject").sort({ date: -1 });
         if (!history) {
             return res.status(404).json({ message: "Không tìm thấy history", ok: false });
         }
@@ -19,7 +19,7 @@ const getHistory = async (req, res) => {
 
 const getAllHistory = async (req, res) => {
     try {
-        const history = await HistoryModel.find().populate("quiz_id").populate("user_id", "profilePicture displayName").sort({ date: -1 });
+        const history = await HistoryModel.find().populate("quiz_id", "title subject").populate("user_id", "profilePicture displayName").sort({ date: -1 });
         res.status(200).json({ ok: true, history });
     } catch (error) {
         console.log(error);
@@ -30,9 +30,10 @@ const getAllHistory = async (req, res) => {
 const getHistoryById = async (req, res) => {
     try {
         const { _id } = req.params;
-        const history = await HistoryModel.findOne({ _id }).populate("quiz_id", "_id title content").populate("questions");
+        const history = await HistoryModel.findOne({ _id }).populate("quiz_id", "_id title subject questions").populate("user_id", "profilePicture displayName");
+        const question = await QuizModel.findById(history.quiz_id._id).populate("questions", "data_quiz");
 
-        res.status(200).json({ history });
+        res.status(200).json({ history, question: question.questions.data_quiz });
     } catch (error) {
         console.log(error);
         res.status(404).json({ message: "Không tìm thấy history", status: 404 });
@@ -41,22 +42,14 @@ const getHistoryById = async (req, res) => {
 
 const createHistory = async (req, res) => {
     try {
-        const { quiz_id, time, score, questions } = req.body;
+        const { quiz_id, time, score, userAnswers, total_questions } = req.body;
         const { id } = req.user;
-
-        // Validate required fields
-        if (!quiz_id || !time || score === undefined) {
-            return res.status(400).json({
-                message: "Missing required fields",
-                ok: false,
-            });
-        }
 
         // Validate quiz existence
         const quiz = await QuizModel.findById(quiz_id);
         if (!quiz) {
             return res.status(404).json({
-                message: "Quiz not found",
+                message: "Không tìm thấy quiz",
                 ok: false,
             });
         }
@@ -65,19 +58,14 @@ const createHistory = async (req, res) => {
         quiz.noa = (quiz.noa || 0) + 1;
         await quiz.save();
 
-        // Create data history
-        const newDataHistory = new DataHistoryModel({
-            data_history: questions,
-        });
-        await newDataHistory.save();
-
         // Create history entry
         const newHistory = new HistoryModel({
             user_id: id,
             quiz_id,
             time,
+            total_questions,
             score,
-            questions: newDataHistory._id.toString(),
+            userAnswers: userAnswers,
         });
 
         await newHistory.save();

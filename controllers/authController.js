@@ -29,7 +29,7 @@ const registerUser = async (req, res) => {
         });
 
         await newUser.save();
-        res.status(201).json({ message: "Đăng ký thành công" });
+        res.status(201).json({ message: "Đăng ký thành công", ok: true });
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
@@ -72,7 +72,7 @@ const loginUser = async (req, res) => {
             maxAge: 30 * 24 * 60 * 60 * 1000, // 30day
         });
 
-        res.status(200).json({ message: "Đăng nhập thành công", token });
+        res.status(201).json({ message: "Đăng nhập thành công", token });
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
@@ -88,7 +88,7 @@ const logoutUser = (req, res) => {
     res.status(200).json({ ok: true, message: "Đăng xuất thành công" });
 };
 
-const forgetUser = async (req, res) => {
+const forgotPassword = async (req, res) => {
     try {
         const { email } = req.body;
         if (!email) {
@@ -117,9 +117,9 @@ const forgetUser = async (req, res) => {
     }
 };
 
-const changePassword = async (req, res) => {
+const updatePassword = async (req, res) => {
     const { old_password, new_password, re_new_password } = req.body;
-    const { id } = req.user.user;
+    const { id } = req.user;
     if (!old_password || !new_password || !re_new_password) {
         return res.status(400).json({ message: "Vui lòng điền đẩy đủ" });
     }
@@ -134,7 +134,7 @@ const changePassword = async (req, res) => {
 
     let user = await User.findById(id);
     if (!user) {
-        return res.status(400).json({ message: "Email không tồn tại" });
+        return res.status(400).json({ message: "Người dùng không tồn tại" });
     }
 
     if (!user.status) {
@@ -157,6 +157,36 @@ const changePassword = async (req, res) => {
 
     user.password = hashedPassword;
     await user.save();
+    return res.status(200).json({ ok: true, message: "Cập nhật mật khẩu thành công" });
+};
+
+// thay đổi mật khẩu khi click vào email quên mật khẩu
+const changePassword = async (req, res) => {
+    const { new_password, re_new_password } = req.body;
+    const { id } = req.user;
+    if (!new_password || !re_new_password) {
+        return res.status(400).json({ message: "Vui lòng điền đẩy đủ" });
+    }
+
+    let user = await User.findById(id);
+    if (!user) {
+        return res.status(400).json({ message: "Người dùng không tồn tại" });
+    }
+
+    if (!user.status) {
+        return res.status(400).json({ message: "Tài khoản đã bị khoá, vui lòng liên hệ cho admin qua zalo: 0364080527" });
+    }
+
+    //kiểm tra xem mật khẩu mới có trùng với mật khẩu hiện tại hay không
+    const isMatchNew = await bcrypt.compare(new_password, user.password);
+    if (isMatchNew) {
+        return res.status(400).json({ message: "Mật khẩu mới không được trùng với mật khẩu cũ" });
+    }
+
+    const hashedPassword = await bcrypt.hash(new_password, 10);
+
+    user.password = hashedPassword;
+    await user.save();
     return res.status(200).json({ message: "Cập nhật mật khẩu thành công" });
 };
 
@@ -164,6 +194,7 @@ module.exports = {
     registerUser,
     loginUser,
     logoutUser,
-    forgetUser,
+    forgotPassword,
+    updatePassword,
     changePassword,
 };
