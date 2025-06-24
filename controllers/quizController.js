@@ -128,7 +128,7 @@ const CreateComment = async (req, res) => {
 
 const createQuiz = async (req, res) => {
     try {
-        const { title, subject, email, content, img, noa, status, questions } = req.body;
+        const { title, subject, content, img, questions } = req.body;
         const { id } = req.user;
         // Validate required fields
         if (!title) return res.status(400).json({ message: "Vui lòng nhập tiêu đề" });
@@ -166,13 +166,9 @@ const createQuiz = async (req, res) => {
             slug: slugify(title, { lower: true }) + "-" + generateRandomSlug(),
             title,
             subject,
-            email,
             content,
             img,
-            noa,
-            date: new Date(), // Current date
             questions: savedQuestions._id,
-            status,
         });
 
         const savedQuiz = await newQuiz.save();
@@ -188,7 +184,7 @@ const createQuiz = async (req, res) => {
         await newNotification.save();
 
         // Return successful response
-        res.status(201).json({ message: "Tạo Quiz thành công", quiz: savedQuiz });
+        res.status(201).json({ ok: true, message: "Tạo Quiz thành công", quiz: savedQuiz });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });

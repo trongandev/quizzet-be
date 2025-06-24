@@ -352,7 +352,7 @@ exports.updateListFlashCard = async (req, res) => {
         }
         await deleteCache(cacheKey);
 
-        return res.status(200).json({ message: "Danh sách flashcards đã được cập nhật", listFlashCard });
+        return res.status(200).json({ ok: true, message: "Danh sách flashcards đã được cập nhật", listFlashCard });
     } catch (error) {
         return res.status(500).json({ message: "Lỗi khi cập nhật danh sách flashcards", error: error.message });
     }
@@ -371,6 +371,10 @@ exports.deleteListFlashCard = async (req, res) => {
         if (!listFlashCard) {
             return res.status(404).json({ message: "Không tìm thấy danh sách flashcards này để xóa" });
         }
+
+        if (id !== listFlashCard.userId.toString()) {
+            return res.status(403).json({ message: "Bạn không có quyền xóa danh sách flashcards này" });
+        }
         await deleteCache(cacheKey);
         await deleteCache(cacheKey1);
 
@@ -388,7 +392,19 @@ exports.getAllFlashCardsPublic = async (req, res) => {
         if (cachedData) {
             return res.status(200).json(cachedData.data);
         }
+
         const publicFlashcards = await ListFlashCard.find({ public: true }).populate("userId", "_id displayName profilePicture").sort({ created_at: -1 });
+
+        // const paginationData = {
+        //     flashcards: publicFlashcards,
+        //     pagination: {
+        //         currentPage: page,
+        //         totalPages,
+        //         totalCount,
+        //         hasNext: page < totalPages,
+        //         hasPrev: page > 1,
+        //     },
+        // };
 
         await setCache(cacheKey, publicFlashcards);
 

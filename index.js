@@ -16,6 +16,7 @@ const ChatCommuRoutes = require("./routes/ChatCommunity");
 const flashCardRoutes = require("./routes/flashcard");
 const reportRoutes = require("./routes/report");
 const notifyRoutes = require("./routes/notification");
+const cacheRoutes = require("./routes/cache");
 
 const connectDB = require("./config/db");
 const app = express();
@@ -97,6 +98,7 @@ app.use("/api/notice", noticeRoutes);
 app.use("/api", flashCardRoutes);
 app.use("/api/report", reportRoutes);
 app.use("/api/notify", notifyRoutes);
+app.use("/api/cache", cacheRoutes);
 
 // // phát âm thanh bằng proxy để tránh lỗi CORS
 // app.get("/api/proxy", async (req, res) => {

@@ -34,6 +34,11 @@ const QuizSchema = new mongoose.Schema({
         type: Number,
         default: 0, // Số lượt xem
     },
+    difficulty: {
+        type: String,
+        default: "Dễ", // Mức độ khó của quiz
+        enum: ["Dễ", "Trung bình", "Khó"], // Giới hạn các giá trị
+    },
     date: {
         type: Date,
         default: Date.now,

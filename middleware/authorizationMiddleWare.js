@@ -18,7 +18,7 @@ const authMiddleware = async (req, res, next) => {
             res.status(401).json({ message: "Không tìm thấy token, vui lòng đăng nhập" });
         }
     } else {
-        res.status(401).json({ message: "Token không hợp lệ hoặc đã hết hạn" });
+        res.status(401).json({ message: "Token đã hết hạn, vui lòng đăng nhập lại" });
     }
 };
 
