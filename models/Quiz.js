@@ -45,7 +45,7 @@ const QuizSchema = new mongoose.Schema({
     },
     status: {
         type: Boolean,
-        default: false,
+        default: false, // các bài quiz chưa được duyệt lên trang chủ
     },
     questions: {
         type: mongoose.Schema.Types.ObjectId,

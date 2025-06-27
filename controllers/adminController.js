@@ -34,7 +34,7 @@ const addSubOutline = async (req, res) => {
 
 const getSubOutline = async (req, res) => {
     try {
-        const subOutline = await SOModel.find().sort({ view: -1 });
+        const subOutline = await SOModel.find().sort({ date: -1 });
         res.status(200).json(subOutline);
     } catch (error) {
         console.log(error);

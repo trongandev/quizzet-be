@@ -13,6 +13,9 @@ const {
     getAllFlashCards,
     createListFlashCards,
     createFlashCardAI,
+    batchRate,
+    getFlashCardByIdToPractive,
+    statisticsSumarry,
 } = require("../controllers/flashCardController");
 const { authMiddleware, checkAdminMiddleware } = require("../middleware/authorizationMiddleWare");
 const { getListProgress, getDueCards, updateCardProgress, resetListProgress, getLearningStats } = require("../controllers/FlashcardLearningController");
@@ -25,7 +28,10 @@ router.post("/flashcards/create-ai", authMiddleware, createFlashCardAI); // Tạ
 router.post("/flashcards", authMiddleware, createFlashCard); // Tạo flashcard mới
 router.post("/flashcards/list", authMiddleware, createListFlashCards); // Tạo nhiều flashcard mới
 // router.get("/flashcards/user", authMiddleware, getFlashCardByUser); // Lấy tất cả flashcards user
+router.get("/flashcards/practice", authMiddleware, getFlashCardByIdToPractive); // Lấy flashcard theo ID
 router.get("/flashcards/:id", getFlashCardById); // Lấy flashcard theo ID
+router.put("/flashcards/batch-rate", authMiddleware, batchRate); // Cập nhật đánh giá cho nhiều flashcard cùng lúc
+
 router.put("/flashcards/:id", authMiddleware, updateFlashCard); // Cập nhật flashcard
 router.delete("/flashcards/:_id", authMiddleware, deleteFlashCard); // Xóa flashcard
 
@@ -42,10 +48,6 @@ router.delete("/list-flashcards/:id", authMiddleware, deleteListFlashCard); // X
 router.get("/list-flashcards/admin", authMiddleware); // lấy tất cả flashcards
 
 // Routes cho tiến trình học tập
-router.get("/stats", getLearningStats); //Lấy thống kê học tập của người dùng
-router.get("/lists/:listId/progress", getListProgress); // Lấy tiến trình của một danh sách cụ thể
-router.get("/lists/:listId/due", getDueCards); //Lấy danh sách flashcards cần ôn tập hôm nay
-router.post("/cards/:cardId/progress", updateCardProgress); // Cập nhật kết quả học tập cho một flashcard
-router.post("/lists/:listId/reset", resetListProgress); //Đặt lại tiến trình học tập cho một danh sách
+router.get("/flashcard/summary", authMiddleware, statisticsSumarry); // Lấy tiến trình học tập của người dùng
 
 module.exports = router;

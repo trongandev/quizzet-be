@@ -1,5 +1,6 @@
 const User = require("../models/User");
 const { QuizModel, DataQuizModel } = require("../models/Quiz");
+const { ListFlashCard } = require("../models/FlashCard");
 // const { sendFeedbackMail, sendOTPMail } = require("../services/nodemailer");
 const getAllProfile = async (req, res) => {
     try {
@@ -16,10 +17,11 @@ const getProfile = async (req, res) => {
         const { id } = req.user;
         const user = await User.findById(id).select("-password").populate("displayName profilePicture");
         const quiz = await QuizModel.find({ uid: id }).sort({ date: -1 });
+        const flashcards = await ListFlashCard.find({ userId: id }).sort({ created_at: -1 });
         if (!user) {
             return res.status(404).json({ msg: "Người dùng không tìm thấy" });
         }
-        res.status(200).json({ user, quiz });
+        res.status(200).json({ user, quiz, flashcards });
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
@@ -52,11 +54,12 @@ const getProfileById = async (req, res) => {
             return res.status(400).json({ msg: "Thiếu userId trong tham số" });
         }
         const user = await User.findById(uid).select("-password").populate("displayName profilePicture");
-        const quiz = await QuizModel.find({ uid: uid, status: true }).sort({ date: -1 });
+        const quiz = await QuizModel.find({ uid: uid }).sort({ date: -1 });
+        const flashcards = await ListFlashCard.find({ userId: uid }).sort({ created_at: -1 });
         if (!user) {
             return res.status(404).json({ msg: "Người dùng không tìm thấy" });
         }
-        res.status(200).json({ user, quiz });
+        res.status(200).json({ user, quiz, flashcards });
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });

@@ -294,6 +294,38 @@ const approveQuiz = async (req, res) => {
     }
 };
 
+const increaseHelpfulCount = async (req, res) => {
+    try {
+        const { quizId, commentId } = req.body;
+        const { id } = req.user;
+
+        // Tìm quiz và comment
+        const quiz = await QuizModel.findById(quizId);
+        if (!quiz) {
+            return res.status(404).json({ message: "Không tìm thấy Quiz" });
+        }
+
+        const comment = quiz.comment.id(commentId);
+        if (!comment) {
+            return res.status(404).json({ message: "Không tìm thấy bình luận" });
+        }
+
+        // Kiểm tra nếu người dùng đã bầu chọn
+        if (comment.helpful.includes(id)) {
+            return res.status(400).json({ message: "Bạn đã bầu chọn cho bình luận này rồi" });
+        }
+
+        // Thêm người dùng vào danh sách đã bầu chọn
+        comment.helpful.push(id);
+        await quiz.save();
+
+        res.status(200).json({ message: "Bầu chọn thành công", helpfulCount: comment.helpful.length });
+    } catch (error) {
+        console.error("Increase Helpful Count Error:", error);
+        res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
+    }
+};
+
 // Helper function to shuffle array
 function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
