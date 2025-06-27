@@ -91,7 +91,6 @@ const addMessage = async (req, res) => {
         // Lưu tin nhắn
         const savedMessage = await newMessage.save();
 
-        // console.log("ádfd");
         // // Gắn tin nhắn vào phòng chat
         // const newRoom = new ChatCommunity({});
         // await newRoom.save();

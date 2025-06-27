@@ -28,7 +28,14 @@ exports.createFlashCardAI = async (req, res) => {
     try {
         const { list_flashcard_id, prompt, language } = req.body;
         const { id } = req.user;
+        const listFlashCard = await ListFlashCard.findById(list_flashcard_id);
 
+        if (!listFlashCard) {
+            return res.status(404).json({ message: "List FlashCard not found" });
+        }
+        if (listFlashCard.userId.equals(id) === false) {
+            return res.status(403).json({ message: "Bạn không có quyền tạo flashcard trong danh sách này" });
+        }
         const result = await model.generateContent(prompt);
         const parse = result.response
             .text()
@@ -38,12 +45,6 @@ exports.createFlashCardAI = async (req, res) => {
         const data = JSON.parse(parse);
 
         const newFlashCard = new FlashCard({ ...data, userId: id.toString(), language: language });
-
-        const listFlashCard = await ListFlashCard.findById(list_flashcard_id);
-
-        if (!listFlashCard) {
-            return res.status(404).json({ message: "List FlashCard not found" });
-        }
 
         listFlashCard.flashcards.push(newFlashCard._id);
         await newFlashCard.save();
@@ -180,7 +181,6 @@ exports.batchRate = async (req, res) => {
 
         if (bulkOperations.length > 0) {
             const result = await FlashCard.bulkWrite(bulkOperations);
-            console.log("Bulk write result:", result);
         }
 
         if (errors.length > 0) {
@@ -286,8 +286,6 @@ exports.getFlashCardById = async (req, res) => {
         listFlashCards.flashcards.forEach((card) => {
             statusCounts[card.status] = (statusCounts[card.status] || 0) + 1;
         });
-
-        console.log("Status Counts:", statusCounts);
 
         if (!listFlashCards) {
             return res.status(404).json({ message: "Không tìm thấy danh sách flashcards cho người dùng này" });
@@ -518,7 +516,6 @@ exports.deleteListFlashCard = async (req, res) => {
         // 3. Xóa các thẻ flashcard liên quan
         if (cardIdsToDelete && cardIdsToDelete.length > 0) {
             const deleteCardsResult = await FlashCard.deleteMany({ _id: { $in: cardIdsToDelete }, userId: id });
-            console.log(`Đã xóa ${deleteCardsResult.deletedCount} thẻ flashcard từ danh sách.`);
         }
 
         // 4. Xóa danh sách flashcard đó

@@ -67,7 +67,6 @@ app.get(
     }),
     (req, res) => {
         // Tạo token như bình thường
-        console.log(req);
         const token = jwt.sign({ id: req.user._id }, process.env.SECRET_KEY, { expiresIn: "1d" });
 
         // Sử dụng CLIENT_URL từ environment variable
