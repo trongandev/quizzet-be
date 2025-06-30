@@ -27,9 +27,6 @@ const Create = async (req, res) => {
     try {
         const { type_of_violation, link, content } = req.body;
         const { id } = req.user;
-        if (!content) {
-            return res.status(400).json({ message: "Vui lòng nhập nội dung..." });
-        }
 
         const newReport = new Report({
             user_report: id,

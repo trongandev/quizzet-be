@@ -15,9 +15,10 @@ const getQuiz = async (req, res) => {
 
 const getQuizByUser = async (req, res) => {
     try {
-        const { _id } = req.user;
-        const quiz = await QuizModel.find({ uid: _id }).sort({ date: -1 });
-        res.status(200).json({ quiz });
+        const { id } = req.user;
+        const quiz = await QuizModel.find({ uid: id }).populate("uid", "_id displayName profilePicture").sort({ date: -1 });
+
+        res.status(200).json(quiz);
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });

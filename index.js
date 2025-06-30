@@ -99,17 +99,6 @@ app.use("/api/report", reportRoutes);
 app.use("/api/notify", notifyRoutes);
 app.use("/api/cache", cacheRoutes);
 
-// // phát âm thanh bằng proxy để tránh lỗi CORS
-// app.get("/api/proxy", async (req, res) => {
-//     const { audio, type } = req.query;
-//     const response = await fetch(`https://dict.youdao.com/dictvoice?audio=${audio}&type=${type}`);
-//     // const response = await fetch(`https://dict.youdao.com/voice?audio=hello, my name is an&type=${type}`);
-//     const data = await response.arrayBuffer();
-//     console.log(data);
-//     res.set("Content-Type", "audio/mpeg");
-//     res.send(Buffer.from(data));
-// });
-
 const PORT = process.env.PORT || 5001;
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

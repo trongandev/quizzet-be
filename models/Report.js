@@ -11,11 +11,10 @@ const ReportSchema = new mongoose.Schema({
     },
     type_of_violation: {
         type: String, // loại vi phạm spam, không phù hợp, khác
-        enum: ["spam", "không phù hợp", "khác"],
+        enum: ["spam", "inappropriate", "other", "copyright", "misinformation"],
     },
     content: {
         type: String, //nội dung báo cáo
-        required: true,
         trim: true,
     },
     status: {

@@ -1,6 +1,6 @@
 const cloudinary = require("cloudinary").v2;
-const multer = require("multer");
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const sharp = require("sharp");
 
 // Cấu hình Cloudinary
 cloudinary.config({
@@ -9,31 +9,40 @@ cloudinary.config({
     api_secret: "pMYKdWkLDy_fiyzNsJa3WkE6XUo",
 });
 // Cấu hình Multer với Cloudinary Storage
-const storage = new CloudinaryStorage({
-    cloudinary: cloudinary,
-    params: {
-        folder: "uploads", // Tên thư mục trong Cloudinary
-        allowed_formats: ["jpg", "png", "jpeg", "webp"], // Định dạng cho phép
-    },
-});
 
-const upload = multer({ storage: storage });
 const uploadImage = async (req, res) => {
     try {
-        if (!req.file) {
-            return res.status(400).json({ message: "No file uploaded" });
-        }
+        // Resize và nén ảnh bằng sharp
+        const optimizedBuffer = await sharp(req.file.buffer)
+            .resize({ width: 800 }) // chỉnh độ rộng tối đa
+            .jpeg({ quality: 70 }) // nén ảnh xuống 70%
+            .toBuffer();
 
-        const file = req.file;
-
-        res.status(200).json({
-            message: "File uploaded successfully",
-            originalUrl: file.path,
+        // Upload lên Cloudinary từ buffer
+        // Upload lên Cloudinary từ buffer (không cần streamifier)
+        const result = await new Promise((resolve, reject) => {
+            cloudinary.uploader
+                .upload_stream(
+                    {
+                        folder: "uploads",
+                        resource_type: "auto",
+                    },
+                    (error, result) => {
+                        if (error) {
+                            reject(error);
+                        } else {
+                            resolve(result);
+                        }
+                    }
+                )
+                .end(optimizedBuffer);
         });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Upload failed", error: error.message });
+
+        return res.json({ url: result.secure_url });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ message: "Upload failed" });
     }
 };
 
-module.exports = { upload, uploadImage };
+module.exports = { uploadImage };
