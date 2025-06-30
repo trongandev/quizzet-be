@@ -146,7 +146,7 @@ const createQuiz = async (req, res) => {
             if (!Array.isArray(question.answers) || question.answers.length === 0) {
                 return res.status(400).json({ message: `Đáp án câu hỏi số ${index + 1} chưa có` });
             }
-            if (typeof question.correct !== "number" || question.correct < 0 || question.correct >= question.answers.length) {
+            if (question.correct < 0 || question.correct >= question.answers.length) {
                 return res.status(400).json({ message: `Đáp án câu ${index + 1} bạn chưa chọn hoặc không hợp lệ` });
             }
             return false;
