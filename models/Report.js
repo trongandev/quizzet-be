@@ -19,7 +19,7 @@ const ReportSchema = new mongoose.Schema({
     },
     status: {
         type: String, //trạng thái báo cáo đang chờ xử lí hoặc đã xử lí
-        enum: ["pending", "resolved"],
+        enum: ["pending", "resolved", "rejected"],
         default: "pending",
     },
     created_at: {

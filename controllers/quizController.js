@@ -42,7 +42,7 @@ const getQuizBySubject = async (req, res) => {
 
 const getQuizAdmin = async (req, res) => {
     try {
-        const quiz = await QuizModel.find().sort({ date: -1 });
+        const quiz = await QuizModel.find().populate("uid", "_id displayName profilePicture created_at").sort({ date: -1 }).lean().exec();
         res.status(200).json({ quiz, ok: true });
     } catch (error) {
         console.log(error);

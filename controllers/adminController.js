@@ -1,6 +1,10 @@
 const { default: slugify } = require("slugify");
 const { SOModel, DataSOModel } = require("../models/SO");
 const generateRandomSlug = require("../services/random-slug");
+const { QuizModel } = require("../models/Quiz");
+const { FlashCard } = require("../models/FlashCard");
+const Report = require("../models/Report");
+const User = require("../models/User");
 const addSubOutline = async (req, res) => {
     try {
         const { title, image, quest } = req.body;
@@ -116,6 +120,27 @@ const deleteSubOutline = async (req, res) => {
     }
 };
 
+const analysticAll = async (req, res) => {
+    try {
+        const subOutline = await SOModel.find();
+        const quiz = await QuizModel.find();
+        const flashcard = await FlashCard.find();
+        const report = await Report.find();
+        const user = await User.find();
+        const data = {
+            subOutline: subOutline.length,
+            quiz: quiz.length,
+            flashcard: flashcard.length,
+            report: report.length,
+            user: user.length,
+        };
+        res.status(200).json(data);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
+    }
+};
+
 module.exports = {
     addSubOutline,
     getSubOutline,
@@ -124,4 +149,5 @@ module.exports = {
     updateSO,
     updateViewSO,
     deleteSubOutline,
+    analysticAll,
 };
