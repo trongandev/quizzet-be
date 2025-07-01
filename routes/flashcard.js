@@ -26,7 +26,7 @@ router.post("/flashcards/create-ai", authMiddleware, createFlashCardAI); // Tạ
 
 // Flashcard Routes
 router.post("/flashcards", authMiddleware, createFlashCard); // Tạo flashcard mới
-router.post("/flashcards/list", authMiddleware, createListFlashCards); // Tạo nhiều flashcard mới
+router.post("/flashcards/create-ai-list", authMiddleware, createListFlashCards); // Tạo nhiều flashcard mới
 // router.get("/flashcards/user", authMiddleware, getFlashCardByUser); // Lấy tất cả flashcards user
 router.get("/flashcards/practice", authMiddleware, getFlashCardByIdToPractive); // Lấy flashcard theo ID
 router.get("/flashcards/:id", getFlashCardById); // Lấy flashcard theo ID

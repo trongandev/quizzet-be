@@ -196,7 +196,7 @@ exports.batchRate = async (req, res) => {
 // Tạo nhiều danh sách flashcard mới
 exports.createListFlashCards = async (req, res) => {
     try {
-        const { list_flashcard_id, prompt } = req.body; // Nhận danh sách flashcard từ request
+        const { list_flashcard_id, prompt, language } = req.body; // Nhận danh sách flashcard từ request
         const { id } = req.user;
 
         // Kiểm tra nếu thiếu dữ liệu bắt buộc
@@ -205,6 +205,7 @@ exports.createListFlashCards = async (req, res) => {
         }
 
         const result = await model.generateContent(prompt);
+
         const parse = result.response
             .text()
             .replace(/```json/g, "")
@@ -224,7 +225,7 @@ exports.createListFlashCards = async (req, res) => {
 
         // Lặp qua danh sách flashcard để tạo từng cái
         for (const flashcardData of data) {
-            const { title, define, type_of_word, transcription, example, note, language } = flashcardData;
+            const { title, define, type_of_word, transcription, example, note } = flashcardData;
 
             // Kiểm tra thông tin bắt buộc
             if (!title || !define) {
@@ -232,6 +233,7 @@ exports.createListFlashCards = async (req, res) => {
             }
 
             const newFlashCard = new FlashCard({
+                userId: id.toString(),
                 title,
                 define,
                 language,
