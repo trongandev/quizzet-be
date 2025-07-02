@@ -196,7 +196,7 @@ exports.batchRate = async (req, res) => {
 // Tạo nhiều danh sách flashcard mới
 exports.createListFlashCards = async (req, res) => {
     try {
-        const { list_flashcard_id, prompt, language } = req.body; // Nhận danh sách flashcard từ request
+        const { list_flashcard_id, language, data } = req.body; // Nhận danh sách flashcard từ request
         const { id } = req.user;
 
         // Kiểm tra nếu thiếu dữ liệu bắt buộc
@@ -204,17 +204,6 @@ exports.createListFlashCards = async (req, res) => {
             return res.status(400).json({ message: "Không có id flashcard này!!" });
         }
 
-        const result = await model.generateContent(prompt);
-
-        const parse = result.response
-            .text()
-            .replace(/```json/g, "")
-            .replace(/```/g, "");
-
-        const data = JSON.parse(parse);
-        if (!Array.isArray(data) || data.length === 0) {
-            return res.status(400).json({ message: "Dữ liệu flashcard không hợp lệ hoặc rỗng" });
-        }
         const listFlashCard = await ListFlashCard.findById(list_flashcard_id);
 
         if (!listFlashCard) {
