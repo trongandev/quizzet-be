@@ -67,7 +67,10 @@ const getQuizById = async (req, res) => {
                 path: "questions",
             },
         ]);
-        res.status(200).json({ quiz });
+        if (!quiz) {
+            return res.status(404).json({ message: "Không tìm thấy Quiz", status: 404 });
+        }
+        res.status(200).json({ ok: true, quiz });
     } catch (error) {
         console.log(error);
         res.status(404).json({ message: "Không tìm thấy Quiz", status: 404 });

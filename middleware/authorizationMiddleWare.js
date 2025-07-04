@@ -30,4 +30,29 @@ const checkAdminMiddleware = (req, res, next) => {
     }
 };
 
+// middleware/checkRole.js
+const checkRole = (roles) => {
+    return (req, res, next) => {
+        if (!req.user) {
+            return res.status(401).json({ message: "Unauthorized" });
+        }
+
+        const userRole = req.user.role;
+
+        // SuperAdmin có thể access tất cả
+        if (userRole === "superadmin") {
+            return next();
+        }
+
+        // Kiểm tra role khác
+        if (roles.includes(userRole)) {
+            return next();
+        }
+
+        return res.status(403).json({ message: "Forbidden: Insufficient permissions" });
+    };
+};
+
+module.exports = { checkRole };
+
 module.exports = { authMiddleware, checkAdminMiddleware };
