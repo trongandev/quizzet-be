@@ -2,7 +2,7 @@ const { default: slugify } = require("slugify");
 const { SOModel, DataSOModel } = require("../models/SO");
 const generateRandomSlug = require("../services/random-slug");
 const { QuizModel } = require("../models/Quiz");
-const { FlashCard } = require("../models/FlashCard");
+const { FlashCard, ListFlashCard } = require("../models/FlashCard");
 const Report = require("../models/Report");
 const User = require("../models/User");
 const addSubOutline = async (req, res) => {
@@ -125,12 +125,14 @@ const analysticAll = async (req, res) => {
         const subOutline = await SOModel.find();
         const quiz = await QuizModel.find();
         const flashcard = await FlashCard.find();
+        const listFlashcard = await ListFlashCard.find();
         const report = await Report.find();
         const user = await User.find();
         const data = {
             subOutline: subOutline.length,
             quiz: quiz.length,
             flashcard: flashcard.length,
+            listFlashcard: listFlashcard.length,
             report: report.length,
             user: user.length,
         };

@@ -299,7 +299,7 @@ exports.getFlashCardByIdToPractive = async (req, res) => {
 
         const combinedCards = [...cardsDueToday, ...otherCards];
 
-        return res.status(200).json({ ok: true, listFlashCards: combinedCards });
+        return res.status(200).json({ ok: true, listFlashCards: cardsDueToday });
     } catch (error) {
         console.log(error);
         return res.status(500).json({ message: "Lỗi khi lấy danh sách flashcards", error: error.message });
