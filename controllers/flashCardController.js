@@ -24,6 +24,20 @@ const deleteCache = async (key) => {
 const genAI = new GoogleGenerativeAI(process.env.API_KEY_AI);
 const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
+exports.translateAIEnhance = async (req, res) => {
+    try {
+        const { prompt } = req.body;
+
+        const result = await model.generateContent(prompt);
+        const parse = result.response.text();
+
+        return res.status(200).json({ ok: true, message: "Dịch thuật thành công", parse });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: "Lỗi khi tạo flashcard", error: error.message });
+    }
+};
+
 exports.createFlashCardAI = async (req, res) => {
     try {
         const { list_flashcard_id, prompt, language } = req.body;

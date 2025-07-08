@@ -28,6 +28,20 @@ const getProfile = async (req, res) => {
     }
 };
 
+const getOneProfile = async (req, res) => {
+    try {
+        const { id } = req.user;
+        const user = await User.findById(id).select("-password").populate("displayName profilePicture").lean().exec();
+        if (!user) {
+            return res.status(404).json({ msg: "Người dùng không tìm thấy" });
+        }
+        res.status(200).json({ user, ok: true });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
+    }
+};
+
 const findProfileByName = async (req, res) => {
     try {
         const { text } = req.params;
@@ -173,4 +187,5 @@ module.exports = {
     sendMail,
     checkOTP,
     sendMailContribute,
+    getOneProfile,
 };

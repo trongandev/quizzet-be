@@ -16,6 +16,7 @@ const {
     batchRate,
     getFlashCardByIdToPractive,
     statisticsSumarry,
+    translateAIEnhance,
 } = require("../controllers/flashCardController");
 const { authMiddleware, checkAdminMiddleware } = require("../middleware/authorizationMiddleWare");
 const { getListProgress, getDueCards, updateCardProgress, resetListProgress, getLearningStats } = require("../controllers/FlashcardLearningController");
@@ -23,6 +24,7 @@ const router = express.Router();
 
 // AI create flashcard
 router.post("/flashcards/create-ai", authMiddleware, createFlashCardAI); // Tạo flashcard mới
+router.post("/flashcards/translate", authMiddleware, translateAIEnhance); // Tạo flashcard mới
 
 // Flashcard Routes
 router.post("/flashcards", authMiddleware, createFlashCard); // Tạo flashcard mới

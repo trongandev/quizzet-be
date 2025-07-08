@@ -72,7 +72,7 @@ const loginUser = async (req, res) => {
             maxAge: 30 * 24 * 60 * 60 * 1000, // 30day
         });
 
-        res.status(201).json({ message: "Đăng nhập thành công", token });
+        res.status(201).json({ message: "Đăng nhập thành công", token, isChangePassword: user.isChangePassword });
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
@@ -107,8 +107,9 @@ const forgotPassword = async (req, res) => {
         const new_password = Math.random().toString(36).slice(-8);
         const hashedPassword = await bcrypt.hash(new_password, 10);
         user.password = hashedPassword;
+        user.isChangePassword = true;
         await user.save();
-        await sendForgetPasswordMail(user.email, new_password);
+        await sendForgetPasswordMail(user, new_password);
 
         res.status(200).json({ message: "Gửi thành công, vui lòng kiểm tra email của bạn" });
     } catch (error) {
@@ -156,6 +157,7 @@ const updatePassword = async (req, res) => {
     const hashedPassword = await bcrypt.hash(new_password, 10);
 
     user.password = hashedPassword;
+    user.isChangePassword = false; // đã thay đổi mật khẩu và trường này sẽ được sử dụng để kiểm tra khi người dùng đăng nhập lần đầu tiên sau khi thay đổi mật khẩu
     await user.save();
     return res.status(200).json({ ok: true, message: "Cập nhật mật khẩu thành công" });
 };
@@ -186,8 +188,9 @@ const changePassword = async (req, res) => {
     const hashedPassword = await bcrypt.hash(new_password, 10);
 
     user.password = hashedPassword;
+    user.isChangePassword = false; // đã thay đổi mật khẩu và trường này sẽ được sử dụng để kiểm tra khi người dùng đăng nhập lần đầu tiên sau khi thay đổi mật khẩu
     await user.save();
-    return res.status(200).json({ message: "Cập nhật mật khẩu thành công" });
+    return res.status(200).json({ ok: true, message: "Cập nhật mật khẩu thành công" });
 };
 
 module.exports = {

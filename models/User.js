@@ -44,6 +44,10 @@ const UserSchema = new mongoose.Schema({
         type: String,
         default: "https://vnn-imgs-a1.vgcloud.vn/image1.ictnews.vn/_Files/2020/03/17/trend-avatar-1.jpg",
     },
+    isChangePassword: {
+        type: Boolean,
+        default: false, // Chưa đổi mật khẩu
+    },
     created_at: {
         type: Date,
         default: Date.now,

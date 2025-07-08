@@ -93,7 +93,7 @@ const HTML_TEMPLATE = (user, code, message, detail) => {
             <div class="container-sec">
                 <div class="text-center">
                     <div class="welcome-section">
-                        <div class="app-name">TRONGAN.SITE</div>
+                        <div class="app-name">QUIZZET.SITE</div>
                     </div>
                     <h2 class="black">Xin chào, ${user}</h2>
                     <p class="black">${message} của bạn là:</p>
