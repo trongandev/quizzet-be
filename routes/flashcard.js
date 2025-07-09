@@ -23,8 +23,8 @@ const { getListProgress, getDueCards, updateCardProgress, resetListProgress, get
 const router = express.Router();
 
 // AI create flashcard
-router.post("/flashcards/create-ai", authMiddleware, createFlashCardAI); // Tạo flashcard mới
-router.post("/flashcards/translate", authMiddleware, translateAIEnhance); // Tạo flashcard mới
+router.post("/flashcards/create-ai", authMiddleware, createFlashCardAI); // Tạo flashcard bằng AI
+router.post("/flashcards/translate", authMiddleware, translateAIEnhance); // Tạo dịch bằng AI
 
 // Flashcard Routes
 router.post("/flashcards", authMiddleware, createFlashCard); // Tạo flashcard mới
