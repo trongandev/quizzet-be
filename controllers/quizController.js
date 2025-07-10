@@ -171,7 +171,7 @@ const createQuiz = async (req, res) => {
             title,
             subject,
             content,
-            img,
+            img: img || "https://art.vinadesign.vn/img/khong-co-ap-luc-khong-co-kim-cuong-design-1-mockup-vector.jpg",
             questions: savedQuestions._id,
         });
 

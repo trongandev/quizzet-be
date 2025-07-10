@@ -15,7 +15,7 @@ const uploadImage = async (req, res) => {
         // Resize và nén ảnh bằng sharp
         const optimizedBuffer = await sharp(req.file.buffer)
             .resize({ width: 800 }) // chỉnh độ rộng tối đa
-            .jpeg({ quality: 70 }) // nén ảnh xuống 70%
+            .jpeg({ quality: 50 }) // nén ảnh xuống 50%
             .toBuffer();
 
         // Upload lên Cloudinary từ buffer
@@ -44,5 +44,41 @@ const uploadImage = async (req, res) => {
         return res.status(500).json({ message: "Upload failed" });
     }
 };
+function removeVietnameseTones(str) {
+    return str
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/đ/g, "d")
+        .replace(/Đ/g, "D");
+}
+const uploadFile = async (req, res) => {
+    try {
+        // Upload file lên Cloudinary
+        const result = await new Promise((resolve, reject) => {
+            cloudinary.uploader
+                .upload_stream(
+                    {
+                        folder: "uploads/decuong",
+                        resource_type: "auto", // tự động nhận diện loại file
+                        public_id: removeVietnameseTones(req.file.originalname), // sử dụng tên gốc của file
+                        unique_filename: false, // không tạo tên duy nhất
+                    },
+                    (error, result) => {
+                        if (error) {
+                            reject(error);
+                        } else {
+                            resolve(result);
+                        }
+                    }
+                )
+                .end(req.file.buffer);
+        });
 
-module.exports = { uploadImage };
+        return res.json({ ok: true, url: result.secure_url });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ message: "Upload failed" });
+    }
+};
+
+module.exports = { uploadImage, uploadFile };
