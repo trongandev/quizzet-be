@@ -63,6 +63,16 @@ const getSubOutline = async (req, res) => {
     }
 };
 
+const getSubOutlineAdmin = async (req, res) => {
+    try {
+        const findText = await SOModel.find().populate("quest", "data_so").populate("user_id", "_id displayName profilePicture").sort({ date: -1 });
+        return res.status(200).json({ ok: true, findText });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
+    }
+};
+
 const getSubOutlineByUser = async (req, res) => {
     try {
         const { id } = req.user;
@@ -139,6 +149,7 @@ const deleteSubOutline = async (req, res) => {
 
 module.exports = {
     addSubOutline,
+    getSubOutlineAdmin,
     getSubOutline,
     getSubOutlineByUser,
     getSubOutlineBySlug,

@@ -47,7 +47,7 @@ router.patch("/list-flashcards/:id", authMiddleware, updateListFlashCard); // C�
 router.delete("/list-flashcards/:id", authMiddleware, deleteListFlashCard); // Xóa danh sách flashcards
 
 // tính năng
-router.get("/list-flashcards/admin", authMiddleware); // lấy tất cả flashcards
+// router.get("/list-flashcards/admin", authMiddleware); // lấy tất cả flashcards
 
 // Routes cho tiến trình học tập
 router.get("/flashcard/summary", authMiddleware, statisticsSumarry); // Lấy tiến trình học tập của người dùng
