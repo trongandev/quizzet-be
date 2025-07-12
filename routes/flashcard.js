@@ -17,6 +17,7 @@ const {
     getFlashCardByIdToPractive,
     statisticsSumarry,
     translateAIEnhance,
+    getAllListFlashCardsWithExtension,
 } = require("../controllers/flashCardController");
 const { authMiddleware, checkAdminMiddleware } = require("../middleware/authorizationMiddleWare");
 const { getListProgress, getDueCards, updateCardProgress, resetListProgress, getLearningStats } = require("../controllers/FlashcardLearningController");
@@ -42,6 +43,7 @@ router.post("/list-flashcards", authMiddleware, createListFlashCard); // Tạo d
 router.get("/list-flashcards/admin", authMiddleware, checkAdminMiddleware, getAllFlashCards); // lấy tất cả flashcards
 router.get("/list-flashcards/public", getAllFlashCardsPublic); // lấy tất cả danh sách flashcards public
 router.get("/list-flashcards", authMiddleware, getAllListFlashCards); // Lấy tất cả danh sách flashcards của user
+router.get("/list-flashcards/exten", authMiddleware, getAllListFlashCardsWithExtension); // Sử dụng để lấy danh sách flashcards cho extension
 router.get("/list-flashcards/:id", authMiddleware, getListFlashCardById); // Lấy danh sách flashcards theo ID
 router.patch("/list-flashcards/:id", authMiddleware, updateListFlashCard); // Cập nhật danh sách flashcards
 router.delete("/list-flashcards/:id", authMiddleware, deleteListFlashCard); // Xóa danh sách flashcards

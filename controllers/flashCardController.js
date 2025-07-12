@@ -3,6 +3,7 @@ const CacheModel = require("../models/Cache");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const { SM2_Algorithm, determineCardStatus, calculatePercentage } = require("../services/SM2_Algorithm");
 const dotenv = require("dotenv");
+const User = require("../models/User");
 dotenv.config();
 
 const setCache = async (key, data, ttl = 3600) => {
@@ -429,6 +430,26 @@ exports.getAllListFlashCards = async (req, res) => {
     }
 };
 
+exports.getAllListFlashCardsWithExtension = async (req, res) => {
+    try {
+        const { id } = req.user;
+        const user = await User.findById(id).select("_id displayName profilePicture").lean().exec();
+        if (!user) {
+            return res.status(404).json({ ok: false, message: "Người dùng không tìm thấy" });
+        }
+        const listFlashCards = await ListFlashCard.find({ userId: id }).sort({ created_at: -1 }).select("_id title language").lean().exec();
+
+        if (!listFlashCards) {
+            return res.status(404).json({ ok: false, message: "Không tìm thấy danh sách flashcards cho người dùng này" });
+        }
+
+        return res.status(200).json({ ok: true, listFlashCards, user });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: "Lỗi khi lấy danh sách flashcards", error: error.message });
+    }
+};
+
 // Lấy danh sách flashcard theo ID
 exports.getListFlashCardById = async (req, res) => {
     try {
@@ -537,7 +558,6 @@ exports.getAllFlashCardsPublic = async (req, res) => {
 // Lấy tất cả flashcard
 exports.getAllFlashCards = async (req, res) => {
     try {
-        console.log("Fetching all flashcards for admin");
         const cacheKey = `publicFlashcardsAll`;
         const cachedData = await getCache(cacheKey);
         if (cachedData) {

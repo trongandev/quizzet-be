@@ -31,7 +31,7 @@ const getProfile = async (req, res) => {
 const getOneProfile = async (req, res) => {
     try {
         const { id } = req.user;
-        const user = await User.findById(id).select("-password").populate("displayName profilePicture").lean().exec();
+        const user = await User.findById(id).select("-password").populate("_id displayName profilePicture").lean().exec();
         if (!user) {
             return res.status(404).json({ msg: "Người dùng không tìm thấy" });
         }
