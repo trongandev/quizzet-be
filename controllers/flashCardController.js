@@ -587,31 +587,32 @@ exports.statisticsSumarry = async (req, res) => {
             return res.status(400).json({ message: "Vui lòng cung cấp User ID hợp lệ." });
         }
 
-        // Kiểm tra cache trước
-        const cachedSummary = await getCache(`summary_${userId}`);
-        if (cachedSummary) {
-            return res.status(200).json(cachedSummary.data);
-        }
+        // // Kiểm tra cache trước
+        // const cachedSummary = await getCache(`summary_${userId}`);
+        // if (cachedSummary) {
+        //     return res.status(200).json(cachedSummary.data);
+        // }
 
         // Lấy tất cả flashcards của người dùng
         const allFlashcards = await FlashCard.find({ userId: userId }).lean();
 
-        // 1. Số từ theo trạng thái (đã nhớ, cần ôn tập, đã học thuộc)
-        const statusCounts = {
-            reviewing: 0,
-            remembered: 0,
-            learned: 0,
-            total: allFlashcards.length,
-        };
-
         const learnedWords = [];
+        const rememberedWords = [];
+        const reviewingWords = [];
 
         allFlashcards.forEach((card) => {
-            statusCounts[card.status] = (statusCounts[card.status] || 0) + 1;
+            const wordData = { _id: card._id, title: card.title, define: card.define, transcription: card.transcriptin, nextReviewDate: card.nextReviewDate };
 
-            // Thêm từ đã learned vào array
-            if (card.status === "learned") {
-                learnedWords.push({ _id: card._id, title: card.title, define: card.define, transcription: card.transcription });
+            switch (card.status) {
+                case "learned":
+                    learnedWords.push(wordData);
+                    break;
+                case "remembered":
+                    rememberedWords.push(wordData);
+                    break;
+                case "reviewing":
+                    reviewingWords.push(wordData);
+                    break;
             }
         });
 
@@ -647,13 +648,16 @@ exports.statisticsSumarry = async (req, res) => {
             accuracyPercentage: overallAccuracyPercentage,
         };
 
-        await setCache(`summary_${userId}`, { statusCounts, weeklyReviewedWordsCount, wordAccuracy, learnedWords });
+        await setCache(`summary_${userId}`, { weeklyReviewedWordsCount, wordAccuracy, learnedWords });
 
         res.status(200).json({
-            statusCounts: statusCounts,
             weeklyReviewedWordsCount: weeklyReviewedWordsCount,
             wordAccuracy: wordAccuracy,
-            learnedWords,
+            words: {
+                learnedWords,
+                rememberedWords,
+                reviewingWords,
+            },
         });
     } catch (error) {
         console.error("Lỗi khi lấy thống kê tổng hợp:", error);

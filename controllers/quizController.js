@@ -70,6 +70,8 @@ const getQuizById = async (req, res) => {
         if (!quiz) {
             return res.status(404).json({ message: "Không tìm thấy Quiz", status: 404 });
         }
+        quiz.view += 1; // Tăng lượt xem
+        await quiz.save(); // Lưu lại lượt xem mới
         res.status(200).json({ ok: true, quiz });
     } catch (error) {
         console.log(error);
