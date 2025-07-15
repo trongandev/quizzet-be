@@ -19,7 +19,7 @@ const addSubOutline = async (req, res) => {
                 slug: slugify(title, { lower: true }) + "-" + generateRandomSlug(),
                 title,
                 content,
-                type,
+                type: "txt",
                 image,
                 lenght: quest.length,
                 quest: saveDataSO._id,
