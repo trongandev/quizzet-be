@@ -38,7 +38,7 @@ exports.getUserNotifications = async (req, res) => {
             is_read: false,
         });
 
-        res.status(200).json({ message: "Lấy thông báo thành công", notifications, unreadCount });
+        res.status(200).json({ ok: true, message: "Lấy thông báo thành công", notifications, unreadCount });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Lỗi máy chủ, vui lòng thử lại sau" });

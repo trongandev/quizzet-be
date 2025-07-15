@@ -271,7 +271,12 @@ exports.getFlashCardById = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const listFlashCards = await ListFlashCard.findById(id).populate("flashcards").populate("userId", "_id displayName profilePicture");
+        const listFlashCards = await ListFlashCard.findById(id)
+            .populate({
+                path: "flashcards",
+                options: { sort: { created_at: -1 } },
+            })
+            .populate("userId", "_id displayName profilePicture");
         // 1. Số từ theo trạng thái (đã nhớ, cần ôn tập, đã học thuộc)
         const statusCounts = {
             reviewing: 0, // cần ông tập, đang ôn tập

@@ -29,11 +29,15 @@ const passport = require("passport");
 const jwt = require("jsonwebtoken");
 const errorHandler = require("./middleware/errorHandler");
 const compression = require("compression");
+const morgan = require("morgan");
 
 connectDB();
 
 app.use(cors());
 app.use(express.json({ limit: "50mb" }));
+
+// dùng để log ra các request đến server
+app.use(morgan("dev"));
 // dùng để nén dữ liệu trước khi gửi về client
 app.use(compression());
 

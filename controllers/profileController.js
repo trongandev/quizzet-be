@@ -102,7 +102,7 @@ const updateProfile = async (req, res) => {
         if (!update_profile) {
             return res.status(400).json({ message: "Cập nhật thông tin không thành công" });
         }
-        return res.status(200).json({ message: "Cập nhật thành công", update_profile });
+        return res.status(200).json({ ok: true, message: "Cập nhật thành công", update_profile });
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
