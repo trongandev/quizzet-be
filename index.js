@@ -77,7 +77,7 @@ app.get(
         // Sử dụng CLIENT_URL từ environment variable
         const clientUrl = process.env.CLIENT_URL;
 
-        res.redirect(`${clientUrl}/login?token=${token}`);
+        res.redirect(`${clientUrl}?token=${token}`);
     }
 );
 

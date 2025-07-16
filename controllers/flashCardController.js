@@ -255,7 +255,7 @@ exports.createListFlashCards = async (req, res) => {
 
         await listFlashCard.save(); // Lưu danh sách flashcard
         await deleteCache(`summary_${id}`);
-        await handleCreateActivity(id, "flashcard", "Tạo flashcard hàng loạt", null);
+        await handleCreateActivity(id, "flashcard", "Tạo flashcard hàng loạt", list_flashcard_id);
         return res.status(200).json({
             ok: true,
             message: "Các flashcard đã được tạo thành công",
