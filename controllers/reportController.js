@@ -3,7 +3,7 @@ const Report = require("../models/Report");
 // lấy tất cả báo cáo
 const GetAll = async (req, res) => {
     try {
-        const result = await Report.find().populate("user_report", "_id profilePicture displayName").populate("resolved_by", "_id profilePicture displayName").sort({ created_at: -1 });
+        const result = await Report.find().populate("user_report", "_id profilePicture displayName").populate("resolved_by", "_id profilePicture displayName").sort({ created_at: -1 }).exec();
         res.status(200).json({ ok: true, result });
     } catch (error) {
         console.log(error);

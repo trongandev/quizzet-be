@@ -4,6 +4,7 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 const { SM2_Algorithm, determineCardStatus, calculatePercentage } = require("../services/SM2_Algorithm");
 const dotenv = require("dotenv");
 const User = require("../models/User");
+const { handleCreateActivity } = require("../services/helperFunction");
 dotenv.config();
 
 const setCache = async (key, data, ttl = 3600) => {
@@ -60,7 +61,7 @@ exports.createFlashCardAI = async (req, res) => {
         const data = JSON.parse(parse);
 
         const newFlashCard = new FlashCard({ ...data, userId: id.toString(), language: language });
-
+        await handleCreateActivity(id, "flashcard", "Tạo flashcard bằng AI", newFlashCard._id.toString());
         listFlashCard.flashcards.push(newFlashCard._id);
         await deleteCache(`summary_${id}`);
         await newFlashCard.save();
@@ -114,7 +115,7 @@ exports.createFlashCard = async (req, res) => {
         listFlashCard.flashcards.push(newFlashCard._id);
         listFlashCard.progress.totalCards = (listFlashCard.progress.totalCards || 0) + 1;
         await deleteCache(`summary_${id}`);
-
+        await handleCreateActivity(id, "flashcard", "Tạo flashcard", newFlashCard._id.toString());
         await newFlashCard.save();
         await listFlashCard.save();
         return res.status(201).json({ ok: true, message: "Flashcard đã được tạo thành công", flashcard: newFlashCard });
@@ -193,7 +194,7 @@ exports.batchRate = async (req, res) => {
             const result = await FlashCard.bulkWrite(bulkOperations);
         }
         await deleteCache(`summary_${id}`);
-
+        await handleCreateActivity(id, "flashcard", "luyện tập flashcard", null);
         if (errors.length > 0) {
             res.status(200).json({
                 message: "Đã cập nhật một phần các flashcard, nhưng có lỗi xảy ra với một số thẻ.",
@@ -254,7 +255,7 @@ exports.createListFlashCards = async (req, res) => {
 
         await listFlashCard.save(); // Lưu danh sách flashcard
         await deleteCache(`summary_${id}`);
-
+        await handleCreateActivity(id, "flashcard", "Tạo flashcard hàng loạt", null);
         return res.status(200).json({
             ok: true,
             message: "Các flashcard đã được tạo thành công",
@@ -325,32 +326,6 @@ exports.getFlashCardByIdToPractive = async (req, res) => {
         return res.status(500).json({ message: "Lỗi khi lấy danh sách flashcards", error: error.message });
     }
 };
-
-// Lấy flashcard theo User
-// exports.getFlashCardByUser = async (req, res) => {
-//     try {
-//         const { id } = req.user;
-//         const flashcard = await FlashCard.find({ userId: id }).sort({ created_at: -1 });
-//         if (!flashcard) {
-//             return res.status(404).json({ message: "Không tìm thấy flashcard này" });
-//         }
-//         const fetchedCards = await FlashCard.find({ userId: userId }).lean();
-//         const today = new Date();
-//         today.setHours(0, 0, 0, 0);
-
-//         const cardsDueToday = fetchedCards.filter((card) => new Date(card.nextReviewDate) <= today);
-//         cardsDueToday.sort((a, b) => new Date(a.nextReviewDate).getTime() - new Date(b.nextReviewDate).getTime());
-
-//         const otherCards = fetchedCards.filter((card) => new Date(card.nextReviewDate) > today);
-
-//         const combinedCards = [...cardsDueToday, ...otherCards];
-
-//         return res.status(200).json({ ok: true, combinedCards });
-//     } catch (error) {
-//         return res.status(500).json({ message: "Lỗi khi lấy flashcard", error: error.message });
-//     }
-// };
-
 // Cập nhật flashcard
 exports.updateFlashCard = async (req, res) => {
     try {
@@ -361,6 +336,8 @@ exports.updateFlashCard = async (req, res) => {
         if (!flashcard) {
             return res.status(404).json({ message: "Không tìm thấy flashcard này để cập nhật" });
         }
+        await handleCreateActivity(req.user.id, "flashcard", "Cập nhật flashcard", flashcard._id.toString());
+        await deleteCache(`summary_${req.user.id}`);
         return res.status(200).json({ message: "Flashcard đã được cập nhật", flashcard });
     } catch (error) {
         console.log(error);
@@ -380,6 +357,7 @@ exports.deleteFlashCard = async (req, res) => {
         if (!flashcard) {
             return res.status(404).json({ message: "Không tìm thấy từ này để xóa" });
         }
+        await handleCreateActivity(id, "flashcard", "Xóa flashcard", flashcard._id.toString());
 
         return res.status(200).json({ ok: true, message: `Từ ${flashcard.title} đã được xóa thành công` });
     } catch (error) {
@@ -409,7 +387,7 @@ exports.createListFlashCard = async (req, res) => {
         });
         await newListFlashCard.save();
         const result = await ListFlashCard.findById(newListFlashCard._id).populate("flashcards").populate("userId", "_id displayName profilePicture");
-
+        await handleCreateActivity(id, "flashcard", "Tạo danh sách flashcard", newListFlashCard._id.toString());
         return res.status(201).json({ ok: true, message: "Danh sách flashcards đã được tạo thành công", listFlashCard: result });
     } catch (error) {
         console.log(error);
@@ -482,7 +460,7 @@ exports.updateListFlashCard = async (req, res) => {
         if (!listFlashCard) {
             return res.status(404).json({ message: "Không tìm thấy danh sách flashcards này để cập nhật" });
         }
-
+        await handleCreateActivity(req.user.id, "flashcard", "Cập nhật danh sách flashcard", listFlashCard._id.toString());
         return res.status(200).json({ ok: true, message: "Danh sách flashcards đã được cập nhật", listFlashCard });
     } catch (error) {
         return res.status(500).json({ message: "Lỗi khi cập nhật danh sách flashcards", error: error.message });
@@ -517,6 +495,8 @@ exports.deleteListFlashCard = async (req, res) => {
             // Trường hợp này hiếm khi xảy ra nếu listToDelete đã được tìm thấy
             return res.status(404).json({ message: "Lỗi không xác định khi xóa danh sách." });
         }
+        await handleCreateActivity(id, "flashcard", "Xóa danh sách flashcard", _id);
+        await deleteCache(`summary_${id}`);
 
         return res.status(200).json({
             ok: true,
@@ -568,7 +548,7 @@ exports.getAllFlashCards = async (req, res) => {
         if (cachedData) {
             return res.status(200).json({ ok: true, publicFlashcards: cachedData.data });
         }
-        const publicFlashcards = await ListFlashCard.find().populate("userId", "_id displayName profilePicture").sort({ created_at: -1 });
+        const publicFlashcards = await ListFlashCard.find().populate("userId", "_id displayName profilePicture").sort({ created_at: -1 }).exec();
 
         await setCache(cacheKey, publicFlashcards);
 

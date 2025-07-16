@@ -4,7 +4,7 @@ const { ListFlashCard } = require("../models/FlashCard");
 // const { sendFeedbackMail, sendOTPMail } = require("../services/nodemailer");
 const getAllProfile = async (req, res) => {
     try {
-        const user = await User.find().sort({ created_at: -1 }).select("-password").populate("displayName profilePicture");
+        const user = await User.find().select("-password").populate("displayName profilePicture").sort({ created_at: -1 }).exec();
         res.status(200).json({ user, ok: true });
     } catch (error) {
         console.log(error);

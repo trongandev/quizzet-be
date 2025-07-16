@@ -65,7 +65,7 @@ const getSubOutline = async (req, res) => {
 
 const getSubOutlineAdmin = async (req, res) => {
     try {
-        const findText = await SOModel.find().populate("quest", "data_so").populate("user_id", "_id displayName profilePicture").sort({ date: -1 });
+        const findText = await SOModel.find().populate("quest", "data_so").populate("user_id", "_id displayName profilePicture").sort({ date: -1 }).exec();
         return res.status(200).json({ ok: true, findText });
     } catch (error) {
         console.log(error);

@@ -2,6 +2,7 @@ const { default: slugify } = require("slugify");
 const { DataQuizModel, QuizModel } = require("../models/Quiz");
 const generateRandomSlug = require("../services/random-slug");
 const Notification = require("../models/Notification");
+const { handleCreateActivity } = require("../services/helperFunction");
 
 const getQuiz = async (req, res) => {
     try {
@@ -123,6 +124,7 @@ const CreateComment = async (req, res) => {
 
                 await newNotification.save();
             }
+            await handleCreateActivity(id, "quiz", "Bình luận bài quiz", quiz_id);
 
             res.status(201).json({ ok: true, message: "Bình luận thành công" });
         }
@@ -188,7 +190,7 @@ const createQuiz = async (req, res) => {
         });
 
         await newNotification.save();
-
+        await handleCreateActivity(id, "quiz", "Tạo bài quiz", savedQuiz._id);
         // Return successful response
         res.status(201).json({ ok: true, message: "Tạo Quiz thành công", quiz: savedQuiz });
     } catch (error) {
@@ -205,6 +207,8 @@ const deleteQuiz = async (req, res) => {
         if (!quiz) {
             return res.status(404).json({ message: "Không tìm thấy Quiz", status: 404 });
         }
+        await handleCreateActivity(req.user.id, "quiz", "Xoá bài quiz", _id);
+        await deleteCache(`quiz_${_id}`); // Xoá cache nếu có
         res.status(200).json({ message: "Xoá Quiz thành công" });
     } catch (error) {
         console.log(error);
@@ -254,7 +258,7 @@ const updateQuiz = async (req, res) => {
         if (!updatedQuiz) {
             return res.status(404).json({ message: "Không tìm thấy quiz để cập nhật", status: 404 });
         }
-
+        await handleCreateActivity(req.user.id, "quiz", "Cập nhật bài quiz", quizId);
         res.status(200).json({ message: "Cập nhật Quiz thành công", updatedQuiz });
     } catch (error) {
         console.log(error);
@@ -324,6 +328,18 @@ const increaseHelpfulCount = async (req, res) => {
         // Thêm người dùng vào danh sách đã bầu chọn
         comment.helpful.push(id);
         await quiz.save();
+        await handleCreateActivity(id, "quiz", "Bầu chọn bình luận bài quiz", quizId);
+        // Tạo thông báo nếu người dùng không phải là tác giả của bình luận
+        if (comment.user_id.toString() !== id.toString()) {
+            const newNotification = new Notification({
+                recipient: comment.user_id,
+                sender: id,
+                type: "helpful",
+                link: `/quiz/detail/${quiz.slug}#${commentId}`,
+                content: "đã bầu chọn bình luận của bạn trong bài quiz.",
+            });
+            await newNotification.save();
+        }
 
         res.status(200).json({ message: "Bầu chọn thành công", helpfulCount: comment.helpful.length });
     } catch (error) {
@@ -415,4 +431,5 @@ module.exports = {
     updateQuiz,
     approveQuiz,
     DocumentBank,
+    increaseHelpfulCount,
 };

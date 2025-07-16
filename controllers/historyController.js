@@ -19,7 +19,7 @@ const getHistory = async (req, res) => {
 
 const getAllHistory = async (req, res) => {
     try {
-        const history = await HistoryModel.find().populate("quiz_id", "title subject").populate("user_id", "profilePicture displayName").sort({ date: -1 });
+        const history = await HistoryModel.find().populate("quiz_id", "title subject").populate("user_id", "profilePicture displayName").sort({ date: -1 }).exec();
         res.status(200).json({ ok: true, history });
     } catch (error) {
         console.log(error);
