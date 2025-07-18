@@ -3,6 +3,7 @@ const validator = require("validator");
 const User = require("../models/User");
 const bcrypt = require("bcrypt");
 const { sendForgetPasswordMail } = require("../services/nodemailer");
+const { GamificationProfile } = require("../models/GamificationProfile");
 
 const registerUser = async (req, res) => {
     try {
@@ -27,6 +28,11 @@ const registerUser = async (req, res) => {
             email,
             password: hashedPassword,
         });
+        // Tạo GamificationProfile cho user mới
+        const gamificationProfile = new GamificationProfile({
+            user_id: newUser._id,
+        });
+        await gamificationProfile.save();
 
         await newUser.save();
         res.status(201).json({ message: "Đăng ký thành công", ok: true });
@@ -64,6 +70,14 @@ const loginUser = async (req, res) => {
         };
 
         const token = jwt.sign(payload, process.env.SECRET_KEY, { expiresIn: "30d" });
+        // kiểm tra xem có GamificationProfile không, nếu không thì tạo mới
+        const gamificationProfile = await GamificationProfile.findOne({ user_id: user._id });
+        if (!gamificationProfile) {
+            const newGamificationProfile = new GamificationProfile({
+                user_id: user._id,
+            });
+            await newGamificationProfile.save();
+        }
 
         res.cookie("token", token, {
             httpOnly: true,

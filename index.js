@@ -1,35 +1,15 @@
 const express = require("express");
 const cors = require("cors");
-const path = require("path");
-const fs = require("fs");
-
-const authRoutes = require("./routes/auth");
-const profileRoutes = require("./routes/profile");
-const quizRoutes = require("./routes/quiz");
-const HistoryRoutes = require("./routes/history");
-const AdminRoutes = require("./routes/admin");
-const ToolRoutes = require("./routes/tool");
-const ChatRoutes = require("./routes/chat");
-const uploadRoutes = require("./routes/upload");
-const noticeRoutes = require("./routes/notice");
-const ChatCommuRoutes = require("./routes/ChatCommunity");
-const flashCardRoutes = require("./routes/flashcard");
-const reportRoutes = require("./routes/report");
-const notifyRoutes = require("./routes/notification");
-const cacheRoutes = require("./routes/cache");
-const soRoutes = require("./routes/so");
-
-const connectDB = require("./config/db");
-const app = express();
-const dotenv = require("dotenv");
-dotenv.config();
-
 const session = require("express-session");
 const passport = require("passport");
-const jwt = require("jsonwebtoken");
-const errorHandler = require("./middleware/errorHandler");
 const compression = require("compression");
 const morgan = require("morgan");
+const dotenv = require("dotenv");
+
+const connectDB = require("./config/db");
+
+dotenv.config();
+const app = express();
 
 connectDB();
 
@@ -59,52 +39,9 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 require("./config/auth"); // Import cấu hình Passport
-app.get("/api/auth/google", passport.authenticate("google", { scope: ["profile", "email"], failureRedirect: "/login/failure" }));
+app.use(require("./routes/google"));
 
-app.get(
-    "/api/auth/google/callback",
-    (req, res, next) => {
-        next();
-    },
-    passport.authenticate("google", {
-        failureRedirect: "/login/failure",
-        session: false,
-    }),
-    (req, res) => {
-        // Tạo token như bình thường
-        const token = jwt.sign({ id: req.user._id }, process.env.SECRET_KEY, { expiresIn: "1d" });
-
-        // Sử dụng CLIENT_URL từ environment variable
-        const clientUrl = process.env.CLIENT_URL;
-
-        res.redirect(`${clientUrl}?token=${token}`);
-    }
-);
-
-// Thêm route xử lý khi login thất bại
-app.use("/login/failure", (req, res) => {
-    res.status(401).json({
-        message: "Google Authentication Failed",
-        error: "Unable to authenticate with Google",
-    });
-});
-
-app.use("/api/auth", authRoutes);
-app.use("/api/profile", profileRoutes);
-app.use("/api/quiz", quizRoutes);
-app.use("/api/history", HistoryRoutes);
-app.use("/api/admin", AdminRoutes);
-app.use("/api/tool", ToolRoutes);
-app.use("/api/chat", ChatRoutes);
-app.use("/api/chatcommu", ChatCommuRoutes);
-app.use("/api/upload", uploadRoutes);
-app.use("/api/notice", noticeRoutes);
-app.use("/api", flashCardRoutes);
-app.use("/api/report", reportRoutes);
-app.use("/api/notify", notifyRoutes);
-app.use("/api/so", soRoutes);
-app.use("/api/cache", cacheRoutes);
-
+app.use(require("./routes/index"));
 const PORT = process.env.PORT || 5001;
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

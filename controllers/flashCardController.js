@@ -5,6 +5,7 @@ const { SM2_Algorithm, determineCardStatus, calculatePercentage } = require("../
 const dotenv = require("dotenv");
 const User = require("../models/User");
 const { handleCreateActivity } = require("../services/helperFunction");
+const GamificationService = require("../services/gamificationService");
 dotenv.config();
 
 const setCache = async (key, data, ttl = 3600) => {
@@ -118,6 +119,8 @@ exports.createFlashCard = async (req, res) => {
         await handleCreateActivity(id, "flashcard", "Tạo flashcard", newFlashCard._id.toString());
         await newFlashCard.save();
         await listFlashCard.save();
+        await GamificationService.addXpForTask(id, "ADD_WORD");
+
         return res.status(201).json({ ok: true, message: "Flashcard đã được tạo thành công", flashcard: newFlashCard });
     } catch (error) {
         console.log(error);
@@ -249,11 +252,13 @@ exports.createListFlashCards = async (req, res) => {
             });
 
             await newFlashCard.save(); // Lưu flashcard vào cơ sở dữ liệu
+            await GamificationService.addXpForTask(id, "ADD_WORD");
             listFlashCard.flashcards.push(newFlashCard._id); // Thêm flashcard ID vào danh sách
             createdFlashcards.push(newFlashCard); // Lưu flashcard đã tạo vào danh sách kết quả
         }
 
         await listFlashCard.save(); // Lưu danh sách flashcard
+
         await deleteCache(`summary_${id}`);
         await handleCreateActivity(id, "flashcard", "Tạo flashcard hàng loạt", list_flashcard_id);
         return res.status(200).json({
@@ -519,18 +524,6 @@ exports.getAllFlashCardsPublic = async (req, res) => {
         }
 
         const publicFlashcards = await ListFlashCard.find({ public: true }).populate("userId", "_id displayName profilePicture").sort({ created_at: -1 });
-
-        // const paginationData = {
-        //     flashcards: publicFlashcards,
-        //     pagination: {
-        //         currentPage: page,
-        //         totalPages,
-        //         totalCount,
-        //         hasNext: page < totalPages,
-        //         hasPrev: page > 1,
-        //     },
-        // };
-
         await setCache(cacheKey, publicFlashcards);
 
         return res.status(200).json(publicFlashcards);

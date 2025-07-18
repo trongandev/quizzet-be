@@ -3,6 +3,7 @@ const { DataQuizModel, QuizModel } = require("../models/Quiz");
 const generateRandomSlug = require("../services/random-slug");
 const Notification = require("../models/Notification");
 const { handleCreateActivity } = require("../services/helperFunction");
+const GamificationService = require("../services/gamificationService");
 
 const getQuiz = async (req, res) => {
     try {
@@ -112,6 +113,7 @@ const CreateComment = async (req, res) => {
             };
             quiz.comment.push(newComment);
             await quiz.save();
+            await GamificationService.addXpForTask(id, "RATE_QUIZ");
             // Nếu người dùng không phải là tác giả của quiz, tạo thông báo
             if (quiz.uid.toString() !== id.toString()) {
                 const newNotification = new Notification({
@@ -188,6 +190,7 @@ const createQuiz = async (req, res) => {
             link: `/quiz/${savedQuiz.slug}`,
             content: "Tạo bài quiz thành công, bài của bạn đang được xem xét để được hiển thị lên trang chủ.",
         });
+        await GamificationService.addXpForTask(id, "CREATE_QUIZ");
 
         await newNotification.save();
         await handleCreateActivity(id, "quiz", "Tạo bài quiz", savedQuiz._id);

@@ -1,6 +1,7 @@
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const User = require("../models/User");
+const { GamificationProfile } = require("../models/GamificationProfile");
 // Configure Passport with Google Strategy
 passport.use(
     new GoogleStrategy(
@@ -18,6 +19,14 @@ passport.use(
                 let user = await User.findOne({ googleId: profile.id });
                 if (user) {
                     // Nếu đã tồn tại Google ID, trả về user
+                    // kiểm tra xem có GamificationProfile không, nếu không thì tạo mới
+                    const gamificationProfile = await GamificationProfile.findOne({ user_id: user._id });
+                    if (!gamificationProfile) {
+                        const newGamificationProfile = new GamificationProfile({
+                            user_id: user._id,
+                        });
+                        await newGamificationProfile.save();
+                    }
                     return done(null, user);
                 } else {
                     // Tìm user theo email
@@ -35,6 +44,15 @@ passport.use(
                         // Lưu lại user đã merge
                         await existingUserByEmail.save();
 
+                        // kiểm tra xem có GamificationProfile không, nếu không thì tạo mới
+                        const gamificationProfile = await GamificationProfile.findOne({ user_id: existingUserByEmail._id });
+                        if (!gamificationProfile) {
+                            const newGamificationProfile = new GamificationProfile({
+                                user_id: existingUserByEmail._id,
+                            });
+                            await newGamificationProfile.save();
+                        }
+
                         return done(null, existingUserByEmail);
                     }
 
@@ -47,7 +65,13 @@ passport.use(
                         provider: profile.provider,
                         verify: profile.emails[0].verified,
                     });
+                    // Tạo GamificationProfile cho user mới
+                    const newGamificationProfile = new GamificationProfile({
+                        user_id: newUser._id,
+                    });
+                    await newGamificationProfile.save();
                     await newUser.save();
+
                     return done(null, newUser);
                 }
             } catch (error) {
