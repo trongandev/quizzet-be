@@ -1,7 +1,7 @@
 const User = require("../models/User");
 const { QuizModel, DataQuizModel } = require("../models/Quiz");
 const { ListFlashCard } = require("../models/FlashCard");
-const { Achievement } = require("../models/GamificationProfile");
+const { Achievement, Level } = require("../models/GamificationProfile");
 const { GamificationProfile } = require("../models/GamificationProfile");
 // const { sendFeedbackMail, sendOTPMail } = require("../services/nodemailer");
 const getAllProfile = async (req, res) => {
@@ -18,16 +18,20 @@ const getProfile = async (req, res) => {
     try {
         const { id } = req.user;
         const user = await User.findById(id).select("-password").populate("displayName profilePicture");
-        const quiz = await QuizModel.find({ uid: id }).sort({ date: -1 });
-        const flashcards = await ListFlashCard.find({ userId: id }).sort({ created_at: -1 });
-        const gamificationProfile = await GamificationProfile.findOne({ user_id: id }).populate({
-            path: "achievements.achievement", // Lấy thông tin chi tiết của achievement
-            model: "Achievement", // Từ model Achievement
-        });
+        const quiz = await QuizModel.find({ uid: id }).sort({ date: -1 }).lean();
+        const flashcards = await ListFlashCard.find({ userId: id }).sort({ created_at: -1 }).lean();
+        const gamificationProfile = await GamificationProfile.findOne({ user_id: id })
+            .populate({
+                path: "achievements.achievement", // Lấy thông tin chi tiết của achievement
+                model: "Achievement", // Từ model Achievement
+            })
+            .lean();
+        const achievements = await Achievement.find().lean();
+        const levels = await Level.find().lean();
         if (!user) {
             return res.status(404).json({ msg: "Người dùng không tìm thấy" });
         }
-        res.status(200).json({ user, quiz, flashcards, gamificationProfile });
+        res.status(200).json({ user, quiz, flashcards, gamificationProfile, achievements, levels });
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });

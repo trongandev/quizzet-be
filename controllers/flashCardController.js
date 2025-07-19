@@ -67,7 +67,7 @@ exports.createFlashCardAI = async (req, res) => {
         await deleteCache(`summary_${id}`);
         await newFlashCard.save();
         await listFlashCard.save();
-
+        await GamificationService.addXpForTask(id, "ADD_WORD");
         return res.status(200).json({ ok: true, message: "Flashcard đã được tạo thành công", flashcard: newFlashCard });
     } catch (error) {
         console.log(error);

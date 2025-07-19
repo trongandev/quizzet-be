@@ -15,6 +15,7 @@ const reportRoutes = require("./report");
 const notifyRoutes = require("./notification");
 const cacheRoutes = require("./cache");
 const archievementRoutes = require("./achievement");
+const levelRoutes = require("./level");
 const soRoutes = require("./so");
 
 const router = express.Router();
@@ -34,5 +35,6 @@ router.use("/api/notify", notifyRoutes);
 router.use("/api/so", soRoutes);
 router.use("/api/cache", cacheRoutes);
 router.use("/api/achievement", archievementRoutes);
+router.use("/api/level", levelRoutes);
 
 module.exports = router;

@@ -1,4 +1,4 @@
-const GamificationProfile = require("../models/GamificationProfile");
+const { GamificationProfile, Level } = require("../models/GamificationProfile");
 const { LEVEL_THRESHOLDS, TASKS } = require("../config/gamificationConfig");
 
 class GamificationService {
@@ -8,44 +8,49 @@ class GamificationService {
      * @param {string} taskType - Loại nhiệm vụ (ví dụ: 'REVIEW_CARD')
      */
     static async addXpForTask(userId, taskType) {
-        const task = TASKS[taskType];
-        if (!task) {
-            throw new Error("Loại nhiệm vụ không hợp lệ");
+        // 1. Lấy thông tin cấu hình của nhiệm vụ
+        const taskConfig = TASKS[taskType];
+        if (!taskConfig) {
+            throw new Error(`Loại nhiệm vụ không hợp lệ: ${taskType}`);
         }
 
-        const profile = await GamificationProfile.findOne({ user: userId });
+        const profile = await GamificationProfile.findOne({ user_id: userId });
         if (!profile) {
-            // Có thể tạo profile ở đây nếu chưa có
             throw new Error("Không tìm thấy hồ sơ game hóa của người dùng");
         }
 
-        // Kiểm tra cấp độ yêu cầu để mở khóa nhiệm vụ
-        if (task.UNLOCK_LEVEL && profile.level < task.UNLOCK_LEVEL) {
-            console.log(`Nhiệm vụ ${taskType} yêu cầu cấp ${task.UNLOCK_LEVEL}.`);
-            return; // Không làm gì cả
+        // 2. Kiểm tra cấp độ yêu cầu
+        if (profile.level < taskConfig.unlockLevel) {
+            console.log(`Nhiệm vụ ${taskType} yêu cầu cấp ${taskConfig.unlockLevel}.`);
+            return;
         }
 
-        // Kiểm tra và reset tiến độ hàng ngày
+        // 3. Kiểm tra và reset tiến độ hàng ngày (hàm đã sửa ở trên)
         this.resetDailyProgressIfNeeded(profile);
 
-        // Kiểm tra giới hạn XP hàng ngày cho nhiệm vụ này
-        const progressField = `${taskType.toLowerCase()}XP`;
-        if (profile.dailyProgress[progressField] >= task.DAILY_CAP) {
-            console.log(`Đã đạt giới hạn XP hàng ngày cho nhiệm vụ ${taskType}.`);
-            return; // Đã đạt giới hạn, không cộng thêm
+        // 4. Tìm hoặc tạo tiến trình cho nhiệm vụ trong ngày
+        let taskProgress = profile.dailyProgress.tasks.find((t) => t.taskId === taskType);
+        if (!taskProgress) {
+            // Nếu chưa có, tạo mới và thêm vào mảng
+            taskProgress = { taskId: taskType, count: 0 };
+            profile.dailyProgress.tasks.push(taskProgress);
         }
 
-        // Cộng XP
-        profile.xp += task.XP;
-        profile.dailyProgress[progressField] += task.XP;
+        // 5. Kiểm tra giới hạn SỐ LẦN thực hiện
+        if (taskProgress.count >= taskConfig.dailyLimitCount) {
+            console.log(`Đã đạt giới hạn hàng ngày cho nhiệm vụ ${taskType}.`);
+            return;
+        }
 
-        // Kiểm tra lên cấp
-        this.checkLevelUp(profile);
+        // 6. Cập nhật tiến trình và XP
+        taskProgress.count += 1; // Tăng số lần thực hiện
+        profile.xp += taskConfig.xpPerAction; // Cộng XP
 
-        // Cập nhật chuỗi ngày học
+        // 7. Kiểm tra lên cấp và chuỗi ngày học (giữ nguyên)
+        await this.checkLevelUp(profile);
         this.updateDailyStreak(profile);
 
-        // Lưu lại thay đổi
+        // 8. Lưu lại thay đổi
         await profile.save();
 
         return profile;
@@ -55,20 +60,28 @@ class GamificationService {
      * Kiểm tra xem người dùng có lên cấp không.
      * @param {object} profile - Document GamificationProfile
      */
-    static checkLevelUp(profile) {
+    static async checkLevelUp(profile) {
         const currentLevel = profile.level;
         const nextLevel = currentLevel + 1;
 
-        if (nextLevel > 16) return; // Đã max cấp
+        // Tìm thông tin của cấp độ TIẾP THEO trong database
+        const nextLevelDoc = await Level.findOne({ level: nextLevel }).lean();
 
-        const xpNeeded = LEVEL_THRESHOLDS[nextLevel];
+        // Nếu không tìm thấy, nghĩa là người dùng đã ở cấp tối đa
+        if (!nextLevelDoc) {
+            return;
+        }
+
+        // Lấy XP yêu cầu từ document vừa tìm được
+        const xpNeeded = nextLevelDoc.xpRequired;
 
         if (profile.xp >= xpNeeded) {
             profile.level = nextLevel;
-            // Có thể thêm logic thưởng khi lên cấp ở đây
-            console.log(`Chúc mừng! Bạn đã lên cấp ${nextLevel}!`);
-            // Tiếp tục kiểm tra nếu có thể lên nhiều cấp một lúc
-            this.checkLevelUp(profile);
+            console.log(`Chúc mừng! Bạn đã lên cấp ${nextLevel} - ${nextLevelDoc.name}!`);
+
+            // Đệ quy để kiểm tra nếu có thể lên nhiều cấp
+            // Phải có await vì hàm này giờ là async
+            await this.checkLevelUp(profile);
         }
     }
 
@@ -109,14 +122,12 @@ class GamificationService {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
+        // Nếu chưa có dailyProgress hoặc đã qua ngày mới
         if (!profile.dailyProgress || !profile.dailyProgress.date || profile.dailyProgress.date.getTime() !== today.getTime()) {
+            // Khởi tạo lại với cấu trúc MẢNG rỗng
             profile.dailyProgress = {
                 date: today,
-                reviewCardXP: 0,
-                addWordXP: 0,
-                createQuizXP: 0,
-                doQuizXP: 0,
-                rateQuizXP: 0,
+                tasks: [],
             };
         }
     }

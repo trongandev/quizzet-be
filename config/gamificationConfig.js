@@ -21,12 +21,38 @@ const LEVEL_THRESHOLDS = {
 };
 
 // Cấu hình XP và giới hạn cho các nhiệm vụ
+// config/taskConfig.js
 const TASKS = {
-    REVIEW_CARD: { XP: 100, DAILY_CAP: 10000 },
-    ADD_WORD: { XP: 100, DAILY_CAP: 5000 },
-    CREATE_QUIZ: { XP: 1000, DAILY_CAP: 5000, UNLOCK_LEVEL: 5 },
-    DO_QUIZ: { XP: 500, DAILY_CAP: 5000, UNLOCK_LEVEL: 8 },
-    RATE_QUIZ: { XP: 200, DAILY_CAP: 2000, UNLOCK_LEVEL: 8 },
+    REVIEW_CARD: {
+        name: "Ôn tập thẻ",
+        xpPerAction: 100,
+        dailyLimitCount: 100, // Giới hạn theo SỐ LẦN
+        unlockLevel: 1,
+    },
+    ADD_WORD: {
+        name: "Thêm từ mới",
+        xpPerAction: 100,
+        dailyLimitCount: 50,
+        unlockLevel: 1,
+    },
+    CREATE_QUIZ: {
+        name: "Tạo bài quiz",
+        xpPerAction: 1000,
+        dailyLimitCount: 5,
+        unlockLevel: 5,
+    },
+    DO_QUIZ: {
+        name: "Làm bài quiz",
+        xpPerAction: 500,
+        dailyLimitCount: 10,
+        unlockLevel: 8,
+    },
+    RATE_QUIZ: {
+        name: "Đánh giá quiz",
+        xpPerAction: 200,
+        dailyLimitCount: 10,
+        unlockLevel: 8,
+    },
 };
 
 module.exports = {
