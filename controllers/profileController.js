@@ -6,6 +6,8 @@ const { GamificationProfile } = require("../models/GamificationProfile");
 const { getTaskDefinitions } = require("../utils/taskCache");
 const Notification = require("../models/Notification");
 const { Chat } = require("../models/Chat");
+const ActivityModel = require("../models/Activity");
+const { getActivitiesByAction } = require("../services/helperFunction");
 // const { sendFeedbackMail, sendOTPMail } = require("../services/nodemailer");
 const getAllProfile = async (req, res) => {
     try {
@@ -30,12 +32,14 @@ const getProfile = async (req, res) => {
             })
             .lean();
         const achievements = await Achievement.find().lean();
-        const levels = await Level.find().lean();
+        const levels = await Level.find().lean().sort({ level: 1 });
         const tasks = await getTaskDefinitions();
+
+        const activities = await getActivitiesByAction(id, 3); // Lấy activities trong 3 ngày gần đây
         if (!user) {
             return res.status(404).json({ msg: "Người dùng không tìm thấy" });
         }
-        res.status(200).json({ user, quiz, flashcards, gamificationProfile, achievements, levels, tasks });
+        res.status(200).json({ user, quiz, flashcards, gamificationProfile, achievements, levels, tasks, activities, ok: true });
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });

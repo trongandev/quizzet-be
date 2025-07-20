@@ -105,14 +105,13 @@ const getTodayActivities = async () => {
  * @param {Number} days - Số ngày gần đây (default: 30)
  * @returns {Promise<Array>} - Danh sách activities
  */
-const getActivitiesByAction = async (userId, action, days = 30) => {
+const getActivitiesByAction = async (userId, days = 30) => {
     try {
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - days);
 
         const activities = await ActivityModel.find({
             userId,
-            action,
             timestamp: { $gte: startDate },
         })
             .sort({ timestamp: -1 })

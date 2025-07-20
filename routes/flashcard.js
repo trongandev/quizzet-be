@@ -20,7 +20,7 @@ const {
     getAllListFlashCardsWithExtension,
 } = require("../controllers/flashCardController");
 const { authMiddleware, checkAdminMiddleware } = require("../middleware/authorizationMiddleWare");
-const { getListProgress, getDueCards, updateCardProgress, resetListProgress, getLearningStats } = require("../controllers/FlashcardLearningController");
+
 const router = express.Router();
 
 // AI create flashcard

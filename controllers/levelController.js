@@ -2,7 +2,7 @@ const { Level } = require("../models/GamificationProfile");
 
 exports.getAllLevelDefinitions = async (req, res) => {
     try {
-        const level = await Level.find().lean();
+        const level = await Level.find().lean().sort({ level: 1 });
         res.status(200).json(level);
     } catch (error) {
         res.status(500).json({ message: "Lỗi server" });

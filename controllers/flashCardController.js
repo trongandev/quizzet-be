@@ -191,6 +191,7 @@ exports.batchRate = async (req, res) => {
                     },
                 },
             });
+            await GamificationService.addXpForTask(userId, "REVIEW_CARD");
         }
 
         if (bulkOperations.length > 0) {
