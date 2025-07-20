@@ -17,6 +17,8 @@ const cacheRoutes = require("./cache");
 const archievementRoutes = require("./achievement");
 const levelRoutes = require("./level");
 const soRoutes = require("./so");
+const taskRoutes = require("./task");
+const gamificationRoutes = require("./gamification");
 
 const router = express.Router();
 router.use("/api/auth", authRoutes);
@@ -36,5 +38,7 @@ router.use("/api/so", soRoutes);
 router.use("/api/cache", cacheRoutes);
 router.use("/api/achievement", archievementRoutes);
 router.use("/api/level", levelRoutes);
+router.use("/api/task", taskRoutes);
+router.use("/api/gamification", gamificationRoutes);
 
 module.exports = router;

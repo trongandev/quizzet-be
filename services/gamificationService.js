@@ -1,5 +1,5 @@
 const { GamificationProfile, Level } = require("../models/GamificationProfile");
-const { LEVEL_THRESHOLDS, TASKS } = require("../config/gamificationConfig");
+const { getTaskDefinitions } = require("../utils/taskCache");
 
 class GamificationService {
     /**
@@ -9,7 +9,8 @@ class GamificationService {
      */
     static async addXpForTask(userId, taskType) {
         // 1. Lấy thông tin cấu hình của nhiệm vụ
-        const taskConfig = TASKS[taskType];
+        const allTasks = getTaskDefinitions();
+        const taskConfig = allTasks[taskType];
         if (!taskConfig) {
             throw new Error(`Loại nhiệm vụ không hợp lệ: ${taskType}`);
         }

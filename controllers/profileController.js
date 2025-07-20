@@ -3,6 +3,9 @@ const { QuizModel, DataQuizModel } = require("../models/Quiz");
 const { ListFlashCard } = require("../models/FlashCard");
 const { Achievement, Level } = require("../models/GamificationProfile");
 const { GamificationProfile } = require("../models/GamificationProfile");
+const { getTaskDefinitions } = require("../utils/taskCache");
+const Notification = require("../models/Notification");
+const { Chat } = require("../models/Chat");
 // const { sendFeedbackMail, sendOTPMail } = require("../services/nodemailer");
 const getAllProfile = async (req, res) => {
     try {
@@ -28,10 +31,53 @@ const getProfile = async (req, res) => {
             .lean();
         const achievements = await Achievement.find().lean();
         const levels = await Level.find().lean();
+        const tasks = await getTaskDefinitions();
         if (!user) {
             return res.status(404).json({ msg: "Người dùng không tìm thấy" });
         }
-        res.status(200).json({ user, quiz, flashcards, gamificationProfile, achievements, levels });
+        res.status(200).json({ user, quiz, flashcards, gamificationProfile, achievements, levels, tasks });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
+    }
+};
+
+const getAnythingInProfile = async (req, res) => {
+    try {
+        const { id } = req.user;
+        const { page = 1, limit = 10 } = req.query; // Phân trang
+        const skip = (page - 1) * limit;
+
+        const notifications = await Notification.find({ recipient: id }).populate("sender", "_id profilePicture displayName").sort({ created_at: -1 }).lean();
+
+        // Đếm số lượng thông báo chưa đọc
+        const unreadCount = await Notification.countDocuments({
+            recipient: id,
+            is_read: false,
+        });
+        const gamificationProfile = await GamificationProfile.findOne({ user_id: id })
+            .populate({
+                path: "achievements.achievement", // Lấy thông tin chi tiết của achievement
+                model: "Achievement", // Từ model Achievement
+            })
+            .lean();
+
+        // Lấy danh sách chat
+        const chats = await Chat.find({ "participants.userId": id })
+            .populate("participants.userId", "displayName profilePicture") // Lấy thông tin người tham gia
+            .sort({ last_message_date: -1 }) // Sắp xếp theo thời gian tin nhắn gần nhất
+            .skip(skip)
+            .limit(parseInt(limit))
+            .select("participants last_message last_message_date is_read")
+            .lean();
+
+        // Đếm số lượng chat chưa đọc
+        const unreadCountChat = await Chat.countDocuments({
+            "participants.userId": id,
+            is_read: false, // Chỉ lấy những chat chưa đọc
+        });
+
+        res.status(200).json({ ok: true, gamificationProfile, notifications, unreadCount, chats, unreadCountChat });
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
@@ -191,6 +237,7 @@ const sendMailContribute = async (req, res) => {
 module.exports = {
     getAllProfile,
     getProfile,
+    getAnythingInProfile,
     findProfileByName,
     getProfileById,
     updateProfile,

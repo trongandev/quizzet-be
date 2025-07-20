@@ -61,11 +61,15 @@ const CreateChat = async (req, res) => {
         });
 
         if (existingChat) {
+            // đánh dấu là đã đọc
+            await Chat.updateMany({ _id: existingChat._id, "participants.userId": id }, { is_read: true });
+            const countRead = await Chat.countDocuments({ _id: existingChat._id, is_read: false });
             return res.status(200).json({
                 ok: true,
                 message: "Phòng chat đã tồn tại",
                 chatId: existingChat._id,
                 exists: true,
+                countRead,
             });
         }
 
@@ -145,10 +149,29 @@ const Delete = async (req, res) => {
     }
 };
 
+const MarkAsRead = async (req, res) => {
+    try {
+        const { chatId } = req.params;
+        const { id } = req.user;
+
+        // Cập nhật trạng thái đã đọc cho cuộc trò chuyện
+        const updatedChat = await Chat.findOneAndUpdate({ _id: chatId, "participants.userId": id }, { is_read: true }, { new: true });
+
+        if (!updatedChat) {
+            return res.status(404).json({ message: "Không tìm thấy cuộc trò chuyện để đánh dấu là đã đọc" });
+        }
+
+        res.status(200).json({ message: "Đã đánh dấu cuộc trò chuyện là đã đọc", ok: true });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
+    }
+};
 module.exports = {
     Get,
     GetById,
     CreateChat,
     Update,
     Delete,
+    MarkAsRead,
 };

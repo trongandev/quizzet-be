@@ -1,5 +1,56 @@
 const mongoose = require("mongoose");
 
+const TaskSchema = new mongoose.Schema(
+    {
+        // ID định danh duy nhất trong code, ví dụ: "REVIEW_CARD"
+        taskId: {
+            type: String,
+            required: true,
+            unique: true,
+        },
+        // Tên hiển thị cho người dùng
+        name: {
+            type: String,
+            required: true,
+        },
+        // Mô tả ngắn về nhiệm vụ
+        description: {
+            type: String,
+            default: "Hoàn thành nhiệm vụ này để nhận thưởng XP!",
+        },
+        //icon
+        icon: {
+            type: String,
+        },
+        // XP thưởng cho mỗi lần hoàn thành
+        xpPerAction: {
+            type: Number,
+            required: true,
+        },
+        // Số lần làm tối đa mỗi ngày
+        dailyLimitCount: {
+            type: Number,
+            required: true,
+        },
+        // Cấp độ yêu cầu để mở khóa
+        unlockLevel: {
+            type: Number,
+            required: true,
+            default: 1,
+        },
+        // Cờ để bật/tắt nhiệm vụ mà không cần xóa
+        isActive: {
+            type: Boolean,
+            default: true,
+        },
+    },
+    { timestamps: true }
+);
+
+// TỐI ƯU: Thêm index cho trường isActive để truy vấn lấy tất cả các
+// nhiệm vụ đang hoạt động nhanh hơn rất nhiều.
+TaskSchema.index({ isActive: 1 });
+
 const LevelSchema = new mongoose.Schema({
     // Số thứ tự của cấp độ, ví dụ: 1, 2, 3...
     level: {
@@ -140,4 +191,5 @@ module.exports = {
     GamificationProfile: mongoose.model("GamificationProfile", GamificationProfileSchema),
     Achievement: mongoose.model("Achievement", AchievementSchema),
     Level: mongoose.model("Level", LevelSchema),
+    Task: mongoose.model("Task", TaskSchema),
 };
