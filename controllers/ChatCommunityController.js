@@ -1,5 +1,6 @@
 const { Message, ChatCommunity } = require("../models/Chat");
 const CacheModel = require("../models/Cache");
+const { GamificationProfile } = require("../models/GamificationProfile");
 const setCache = async (key, data, ttl = 3600) => {
     // lưu trữ trong 24 giờ
     const expireAt = new Date(Date.now() + ttl * 1000 * 24);
@@ -63,14 +64,16 @@ const getMessages = async (req, res) => {
                 { path: "reactions.userId", select: "_id displayName profilePicture" },
             ])
             .lean();
-
+        // lấy ra top 3 user có level XP cao nhất và sắp xếp theo thứ tự giảm dần
+        const podiumUsers = await GamificationProfile.find({}).sort({ level: -1, xp: -1 }).limit(3).select("level xp dailyStreak").populate("user_id", "_id displayName profilePicture");
         // Cache dữ liệu
-        await setCache(cacheKey, { ok: true, messages, hasMore: skip + limit < totalMessages, remainingMessages });
+        await setCache(cacheKey, { ok: true, messages, hasMore: skip + limit < totalMessages, remainingMessages, podiumUsers });
         res.status(200).json({
             ok: true,
             messages,
             hasMore: skip + limit < totalMessages, // Kiểm tra còn tin nhắn chưa load
             remainingMessages,
+            podiumUsers,
         });
     } catch (error) {
         console.log(error);
