@@ -73,11 +73,28 @@ const analysticAll = async (req, res) => {
                 count,
             }))
             .sort((a, b) => a.month - b.month);
+        // tạo biểu đồ pie chart về tất cả các ngôn ngữ của flashcard
+        const flashCardLanguages = await FlashCard.aggregate([
+            {
+                $group: {
+                    _id: "$language",
+                    count: { $sum: 1 },
+                },
+            },
+            {
+                $project: {
+                    language: "$_id",
+                    count: 1,
+                    _id: 0,
+                },
+            },
+        ]);
+        console.log(flashCardLanguages);
         const activity = await getTodayActivities();
         const data = {
             total: totalData,
             percentageChanges,
-            chartData,
+            chartData: flashCardLanguages,
             activity,
         };
 

@@ -21,7 +21,7 @@ router.get("/", authMiddleware, getProfile);
 router.get("/anything", authMiddleware, getAnythingInProfile); // Lấy bất kỳ thông tin nào trong profile
 router.get("/getoneprofile", authMiddleware, getOneProfile);
 router.get("/findbyname/:text", authMiddleware, findProfileByName);
-router.get("/:uid", getProfileById);
+router.get("/:id", getProfileById);
 router.patch("/", authMiddleware, updateProfile);
 router.post("/feedback", sendMailContribute);
 

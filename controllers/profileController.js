@@ -123,17 +123,28 @@ const findProfileByName = async (req, res) => {
 
 const getProfileById = async (req, res) => {
     try {
-        const uid = req.params.uid;
-        if (!uid) {
-            return res.status(400).json({ msg: "Thiếu userId trong tham số" });
+        const { id } = req.params;
+        if (!id) {
+            return res.status(400).json({ ok: false, msg: "Thiếu userId trong tham số" });
         }
-        const user = await User.findById(uid).select("-password").populate("displayName profilePicture");
-        const quiz = await QuizModel.find({ uid: uid }).sort({ date: -1 });
-        const flashcards = await ListFlashCard.find({ userId: uid }).sort({ created_at: -1 });
+        const user = await User.findById(id).select("-password").populate("displayName profilePicture");
+        const quiz = await QuizModel.find({ uid: id }).sort({ date: -1 }).lean();
+        const flashcards = await ListFlashCard.find({ userId: id }).sort({ created_at: -1 }).lean();
+        const gamificationProfile = await GamificationProfile.findOne({ user_id: id })
+            .populate({
+                path: "achievements.achievement", // Lấy thông tin chi tiết của achievement
+                model: "Achievement", // Từ model Achievement
+            })
+            .lean();
+        const achievements = await Achievement.find().lean();
+        const levels = await Level.find().lean().sort({ level: 1 });
+        const tasks = await getTaskDefinitions();
+
+        const activities = await getActivitiesByAction(id, 3); // Lấy activities trong 3 ngày gần đây
         if (!user) {
             return res.status(404).json({ msg: "Người dùng không tìm thấy" });
         }
-        res.status(200).json({ user, quiz, flashcards });
+        res.status(200).json({ user, quiz, flashcards, gamificationProfile, achievements, levels, tasks, activities, ok: true });
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
