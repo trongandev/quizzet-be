@@ -1,4 +1,5 @@
 const { GamificationProfile } = require("../models/GamificationProfile");
+const { loadTasksIntoCache } = require("../utils/taskCache");
 
 exports.getGamification = async (req, res) => {
     try {
@@ -9,6 +10,7 @@ exports.getGamification = async (req, res) => {
                 model: "Achievement", // Từ model Achievement
             })
             .lean();
+        await loadTasksIntoCache();
         res.status(200).json({ ok: true, gamificationProfile });
     } catch (error) {
         res.status(500).json({ ok: false, message: error.message });

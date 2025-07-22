@@ -97,7 +97,6 @@ const getOneProfile = async (req, res) => {
             return res.status(404).json({ msg: "Người dùng không tìm thấy" });
         }
         const newUser = { ...user, gamification };
-        console.log("New User:", newUser);
         res.status(200).json({ user: newUser, ok: true });
     } catch (error) {
         console.log(error);

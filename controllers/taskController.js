@@ -13,6 +13,15 @@ exports.getTaskDefinitions = async (req, res) => {
     }
 };
 
+exports.reloadTask = async (req, res) => {
+    try {
+        await loadTasksIntoCache();
+        res.status(200).json({ message: "Đã tải lại nhiệm vụ thành công" });
+    } catch (error) {
+        res.status(500).json({ message: "Lỗi khi tải lại nhiệm vụ" });
+    }
+};
+
 exports.createTask = async (req, res) => {
     try {
         const { taskId, description, xpPerAction, dailyLimitCount, unlockLevel } = req.body;
