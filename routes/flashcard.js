@@ -18,6 +18,7 @@ const {
     statisticsSumarry,
     translateAIEnhance,
     getAllListFlashCardsWithExtension,
+    getFlashCardToPractive,
 } = require("../controllers/flashCardController");
 const { authMiddleware, checkAdminMiddleware } = require("../middleware/authorizationMiddleWare");
 
@@ -31,7 +32,8 @@ router.post("/flashcards/translate", authMiddleware, translateAIEnhance); // T�
 router.post("/flashcards", authMiddleware, createFlashCard); // Tạo flashcard mới
 router.post("/flashcards/create-ai-list", authMiddleware, createListFlashCards); // Tạo nhiều flashcard mới
 // router.get("/flashcards/user", authMiddleware, getFlashCardByUser); // Lấy tất cả flashcards user
-router.get("/flashcards/practice", authMiddleware, getFlashCardByIdToPractive); // Lấy flashcard theo ID
+router.get("/flashcards/practice/:fc_id", authMiddleware, getFlashCardByIdToPractive); // Lấy flashcard theo ID
+router.get("/flashcards/practice", authMiddleware, getFlashCardToPractive); // Lấy flashcard theo ID
 router.get("/flashcards/:id", getFlashCardById); // Lấy flashcard theo ID
 router.put("/flashcards/batch-rate", authMiddleware, batchRate); // Cập nhật đánh giá cho nhiều flashcard cùng lúc
 

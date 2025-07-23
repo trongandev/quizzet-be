@@ -308,23 +308,33 @@ exports.getFlashCardById = async (req, res) => {
 
 exports.getFlashCardByIdToPractive = async (req, res) => {
     try {
-        const { id } = req.user;
-        const flashcard = await FlashCard.find({ userId: id }).sort({ created_at: -1 });
-        if (!flashcard) {
+        const { fc_id } = req.params;
+        const list_flashcard = await ListFlashCard.findById(fc_id).populate("flashcards");
+        if (!list_flashcard) {
             return res.status(404).json({ message: "Không tìm thấy flashcard này" });
         }
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const cardsDueToday = list_flashcard.flashcards.filter((card) => new Date(card.nextReviewDate) <= today);
+        cardsDueToday.sort((a, b) => new Date(a.nextReviewDate).getTime() - new Date(b.nextReviewDate).getTime());
+
+        return res.status(200).json({ ok: true, listFlashCards: cardsDueToday });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: "Lỗi khi lấy danh sách flashcards", error: error.message });
+    }
+};
+
+exports.getFlashCardToPractive = async (req, res) => {
+    try {
+        const { id } = req.user;
         const fetchedCards = await FlashCard.find({ userId: id }).lean();
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
         const cardsDueToday = fetchedCards.filter((card) => new Date(card.nextReviewDate) <= today);
         cardsDueToday.sort((a, b) => new Date(a.nextReviewDate).getTime() - new Date(b.nextReviewDate).getTime());
-
-        const otherCards = fetchedCards.filter((card) => new Date(card.nextReviewDate) > today);
-        // shuffle otherCards
-        otherCards.sort(() => Math.random() - 0.5); // Xáo trộn mảng
-
-        const combinedCards = [...cardsDueToday, ...otherCards];
 
         return res.status(200).json({ ok: true, listFlashCards: cardsDueToday });
     } catch (error) {
@@ -405,7 +415,7 @@ exports.getAllListFlashCards = async (req, res) => {
     try {
         const { id } = req.user;
 
-        const listFlashCards = await ListFlashCard.find({ userId: id }).sort({ created_at: -1 }).populate("flashcards", "_id").populate("userId", "_id displayName profilePicture");
+        const listFlashCards = await ListFlashCard.find({ userId: id }).sort({ created_at: -1 }).populate("flashcards", "_id status").populate("userId", "_id displayName profilePicture");
 
         if (!listFlashCards) {
             return res.status(404).json({ message: "Không tìm thấy danh sách flashcards cho người dùng này" });
