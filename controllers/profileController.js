@@ -1,6 +1,6 @@
 const User = require("../models/User");
 const { QuizModel, DataQuizModel } = require("../models/Quiz");
-const { ListFlashCard } = require("../models/FlashCard");
+const { ListFlashCard, FlashCard } = require("../models/FlashCard");
 const { Achievement, Level } = require("../models/GamificationProfile");
 const { GamificationProfile } = require("../models/GamificationProfile");
 const { getTaskDefinitions } = require("../utils/taskCache");
@@ -34,7 +34,7 @@ const getProfile = async (req, res) => {
         const achievements = await Achievement.find().lean();
         const levels = await Level.find().lean().sort({ level: 1 });
         const tasks = await getTaskDefinitions();
-        const countFlashcard = await ListFlashCard.countDocuments({ userId: id });
+        const countFlashcard = await FlashCard.countDocuments({ userId: id });
 
         const activities = await getActivitiesByAction(id, 3); // Lấy activities trong 3 ngày gần đây
         if (!user) {
@@ -142,12 +142,13 @@ const getProfileById = async (req, res) => {
         const achievements = await Achievement.find().lean();
         const levels = await Level.find().lean().sort({ level: 1 });
         const tasks = await getTaskDefinitions();
+        const countFlashcard = await FlashCard.countDocuments({ userId: id });
 
         const activities = await getActivitiesByAction(id, 3); // Lấy activities trong 3 ngày gần đây
         if (!user) {
             return res.status(404).json({ msg: "Người dùng không tìm thấy" });
         }
-        res.status(200).json({ user, quiz, flashcards, gamificationProfile, achievements, levels, tasks, activities, ok: true });
+        res.status(200).json({ user, quiz, flashcards, gamificationProfile, achievements, levels, tasks, activities, countFlashcard, ok: true });
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
