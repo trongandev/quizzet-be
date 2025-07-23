@@ -1,5 +1,4 @@
 const { GamificationProfile } = require("../models/GamificationProfile");
-const { loadTasksIntoCache } = require("../utils/taskCache");
 
 exports.getGamification = async (req, res) => {
     try {
@@ -10,7 +9,6 @@ exports.getGamification = async (req, res) => {
                 model: "Achievement", // Từ model Achievement
             })
             .lean();
-        await loadTasksIntoCache();
         res.status(200).json({ ok: true, gamificationProfile });
     } catch (error) {
         res.status(500).json({ ok: false, message: error.message });
@@ -20,7 +18,6 @@ exports.getGamification = async (req, res) => {
 exports.getTopUsers = async (req, res) => {
     try {
         const { skip = 0, limit = 10, user_id } = req.query;
-        console.log(req.query);
 
         // Lấy top users
         const topUsers = await GamificationProfile.find({})
@@ -35,39 +32,28 @@ exports.getTopUsers = async (req, res) => {
         let currentUserRank = null;
 
         // Kiểm tra nếu có user_id được truyền vào
-        if (user_id) {
-            // Kiểm tra xem user có trong top users không
-            const userInTop = topUsers.find((user) => user.user_id._id.toString() === user_id);
+        if (user_id != undefined && user_id !== "undefined") {
+            currentUser = await GamificationProfile.findOne({ user_id }).select("level xp dailyStreak user_id").populate("user_id", "_id displayName profilePicture").lean();
+            if (currentUser) {
+                // Đếm tất cả users có stats tốt hơn hoặc bằng nhưng tạo trước
+                const betterUsers = await GamificationProfile.countDocuments({
+                    $or: [
+                        { xp: { $gt: currentUser.xp } },
+                        {
+                            xp: currentUser.xp,
+                            _id: { $lt: currentUser._id },
+                        },
+                    ],
+                });
 
-            if (!userInTop) {
-                // Nếu user không trong top, lấy thông tin user và tính rank
-                currentUser = await GamificationProfile.findOne({ user_id }).select("level xp dailyStreak user_id").populate("user_id", "_id displayName profilePicture").lean();
-                if (currentUser) {
-                    // Đếm tất cả users có stats tốt hơn hoặc bằng nhưng tạo trước
-                    const betterUsers = await GamificationProfile.countDocuments({
-                        $or: [
-                            { xp: { $gt: currentUser.xp } },
-                            {
-                                xp: currentUser.xp,
-                                _id: { $lt: currentUser._id },
-                            },
-                        ],
-                    });
-
-                    currentUserRank = betterUsers + 1;
-                }
-            } else {
-                // Nếu user trong top, tìm vị trí của user trong mảng top
-                const userIndex = topUsers.findIndex((user) => user.user_id._id.toString() === user_id);
-                currentUserRank = Number(skip) + userIndex + 1;
-                currentUser = userInTop;
+                currentUserRank = betterUsers + 1;
             }
         }
 
         res.status(200).json({
             ok: true,
             topUsers,
-            hasMore: skip + limit < totalUsers, // Kiểm tra còn tin nhắn chưa load
+            hasMore: skip + limit <= totalUsers, // Kiểm tra còn tin nhắn chưa load
             currentUser: currentUser
                 ? {
                       ...currentUser,

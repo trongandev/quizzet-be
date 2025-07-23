@@ -336,15 +336,15 @@ exports.getFlashCardByIdToPractive = async (req, res) => {
 exports.updateFlashCard = async (req, res) => {
     try {
         const { id } = req.params;
-        const { id_flashcard, updateData } = req.body;
-        const flashcard = await FlashCard.findByIdAndUpdate(id, updateData, { new: true });
+        const { formData } = req.body;
+        const flashcard = await FlashCard.findByIdAndUpdate(id, formData, { new: true });
 
         if (!flashcard) {
-            return res.status(404).json({ message: "Không tìm thấy flashcard này để cập nhật" });
+            return res.status(404).json({ message: "Không tìm thấy flashcard để cập nhật" });
         }
-        await handleCreateActivity(req.user.id, "flashcard", "Cập nhật flashcard", flashcard._id.toString());
+        await handleCreateActivity(req.user.id, "flashcard", "Cập nhật flashcard", id.toString());
         await deleteCache(`summary_${req.user.id}`);
-        return res.status(200).json({ message: "Flashcard đã được cập nhật", flashcard });
+        return res.status(200).json({ ok: true, message: "Flashcard đã được cập nhật", flashcard });
     } catch (error) {
         console.log(error);
         return res.status(500).json({ message: "Lỗi khi cập nhật flashcard", error: error.message });
@@ -354,7 +354,6 @@ exports.updateFlashCard = async (req, res) => {
 // Xóa flashcard
 exports.deleteFlashCard = async (req, res) => {
     try {
-        const { list_flashcard_id } = req.body;
         const { _id } = req.params;
         const { id } = req.user;
 
