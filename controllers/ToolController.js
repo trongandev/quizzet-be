@@ -105,7 +105,7 @@ const GetUser = async (req, res) => {
         const find = await ToolUserModel.find().sort({ created_at: -1 });
         res.status(200).json(find);
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
 };
@@ -115,7 +115,7 @@ const GetHistory = async (req, res) => {
         const find = await ToolHistoryModel.find().sort({ created_at: -1 });
         res.status(200).json(find);
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
 };
@@ -136,7 +136,7 @@ const CreateUser = async (req, res) => {
         await newSO.save();
         res.status(201).json({ message: "Thêm thành công" });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
 };
@@ -174,7 +174,7 @@ const UpdateUser = async (req, res) => {
 
         res.status(200).json({ message: "Cập nhật thành công", ok: true });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
 };
@@ -185,7 +185,7 @@ const DeleteUser = async (req, res) => {
         await ToolUserModel.findByIdAndDelete(id);
         res.status(200).json({ message: "Xóa thành công" });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
 };

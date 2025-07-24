@@ -36,7 +36,7 @@ exports.translateAIEnhance = async (req, res) => {
 
         return res.status(200).json({ ok: true, message: "Dịch thuật thành công", parse });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         return res.status(500).json({ message: "Lỗi khi tạo flashcard", error: error.message });
     }
 };
@@ -70,7 +70,7 @@ exports.createFlashCardAI = async (req, res) => {
         await GamificationService.addXpForTask(id, "ADD_WORD");
         return res.status(200).json({ ok: true, message: "Flashcard đã được tạo thành công", flashcard: newFlashCard });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         return res.status(500).json({ message: "Lỗi khi tạo flashcard", error: error.message });
     }
 };
@@ -123,7 +123,7 @@ exports.createFlashCard = async (req, res) => {
 
         return res.status(201).json({ ok: true, message: "Flashcard đã được tạo thành công", flashcard: newFlashCard });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         return res.status(500).json({ message: "Lỗi khi tạo flashcard", error: error.message });
     }
 };
@@ -268,7 +268,7 @@ exports.createListFlashCards = async (req, res) => {
             flashcards: createdFlashcards,
         });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         return res.status(500).json({ message: "Lỗi khi tạo flashcards", error: error.message });
     }
 };
@@ -301,7 +301,7 @@ exports.getFlashCardById = async (req, res) => {
 
         return res.status(200).json({ ok: true, listFlashCards, statusCounts });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         return res.status(500).json({ message: "Lỗi khi lấy danh sách flashcards", error: error.message });
     }
 };
@@ -321,7 +321,7 @@ exports.getFlashCardByIdToPractive = async (req, res) => {
 
         return res.status(200).json({ ok: true, listFlashCards: cardsDueToday });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         return res.status(500).json({ message: "Lỗi khi lấy danh sách flashcards", error: error.message });
     }
 };
@@ -338,7 +338,7 @@ exports.getFlashCardToPractive = async (req, res) => {
 
         return res.status(200).json({ ok: true, listFlashCards: cardsDueToday });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         return res.status(500).json({ message: "Lỗi khi lấy danh sách flashcards", error: error.message });
     }
 };
@@ -346,17 +346,16 @@ exports.getFlashCardToPractive = async (req, res) => {
 exports.updateFlashCard = async (req, res) => {
     try {
         const { id } = req.params;
-        const { formData } = req.body;
-        const flashcard = await FlashCard.findByIdAndUpdate(id, formData, { new: true });
+        const updateData = req.body;
+
+        const flashcard = await FlashCard.findByIdAndUpdate(id, updateData, { new: true });
 
         if (!flashcard) {
-            return res.status(404).json({ message: "Không tìm thấy flashcard để cập nhật" });
+            return res.status(404).json({ message: "Không tìm thấy flashcard này để cập nhật" });
         }
-        await handleCreateActivity(req.user.id, "flashcard", "Cập nhật flashcard", id.toString());
-        await deleteCache(`summary_${req.user.id}`);
-        return res.status(200).json({ ok: true, message: "Flashcard đã được cập nhật", flashcard });
+
+        return res.status(200).json({ message: "Flashcard đã được cập nhật", flashcard });
     } catch (error) {
-        console.log(error);
         return res.status(500).json({ message: "Lỗi khi cập nhật flashcard", error: error.message });
     }
 };
@@ -405,7 +404,7 @@ exports.createListFlashCard = async (req, res) => {
         await handleCreateActivity(id, "flashcard", "Tạo danh sách flashcard", newListFlashCard._id.toString());
         return res.status(201).json({ ok: true, message: "Danh sách flashcards đã được tạo thành công", listFlashCard: result });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         return res.status(500).json({ message: "Lỗi khi tạo danh sách flashcards", error: error.message });
     }
 };
@@ -423,7 +422,7 @@ exports.getAllListFlashCards = async (req, res) => {
 
         return res.status(200).json({ ok: true, listFlashCards });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         return res.status(500).json({ message: "Lỗi khi lấy danh sách flashcards", error: error.message });
     }
 };
@@ -443,7 +442,7 @@ exports.getAllListFlashCardsWithExtension = async (req, res) => {
 
         return res.status(200).json({ ok: true, listFlashCards, user });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         return res.status(500).json({ message: "Lỗi khi lấy danh sách flashcards", error: error.message });
     }
 };
@@ -468,15 +467,23 @@ exports.getListFlashCardById = async (req, res) => {
 // Cập nhật danh sách flashcard
 exports.updateListFlashCard = async (req, res) => {
     try {
-        const { id } = req.params;
-        const updateData = req.body;
-        const listFlashCard = await ListFlashCard.findByIdAndUpdate(id, updateData, { new: true });
+        const { _id } = req.params;
+        const { isSuccess, isHiddenTranscription } = req.body;
+        let listFlashCard = null;
+        if (isHiddenTranscription) {
+            listFlashCard = await ListFlashCard.findByIdAndUpdate(_id, isHiddenTranscription, { new: true });
+        }
+        if (isSuccess) {
+            listFlashCard = await ListFlashCard.findByIdAndUpdate(_id, isSuccess, { new: true });
+        }
 
         if (!listFlashCard) {
             return res.status(404).json({ message: "Không tìm thấy danh sách flashcards này để cập nhật" });
         }
+        await listFlashCard.save();
+        await deleteCache(`summary_${req.user.id}`);
         await handleCreateActivity(req.user.id, "flashcard", "Cập nhật danh sách flashcard", listFlashCard._id.toString());
-        return res.status(200).json({ ok: true, message: "Danh sách flashcards đã được cập nhật", listFlashCard });
+        return res.status(200).json({ ok: true, message: "Danh sách flashcards đã được cập nhật", listFlashCard, isSuccess, isHiddenTranscription });
     } catch (error) {
         return res.status(500).json({ message: "Lỗi khi cập nhật danh sách flashcards", error: error.message });
     }
@@ -538,7 +545,7 @@ exports.getAllFlashCardsPublic = async (req, res) => {
 
         return res.status(200).json(publicFlashcards);
     } catch (error) {
-        console.log(error);
+        console.error(error);
         return res.status(500).json({ message: "Lỗi khi lấy danh sách flashcards", error: error.message });
     }
 };
@@ -557,7 +564,7 @@ exports.getAllFlashCards = async (req, res) => {
 
         return res.status(200).json({ ok: true, publicFlashcards });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         return res.status(500).json({ message: "Lỗi khi lấy danh sách flashcards", error: error.message });
     }
 };

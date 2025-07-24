@@ -37,7 +37,7 @@ router.get("/flashcards/practice", authMiddleware, getFlashCardToPractive); // L
 router.get("/flashcards/:id", getFlashCardById); // Lấy flashcard theo ID
 router.put("/flashcards/batch-rate", authMiddleware, batchRate); // Cập nhật đánh giá cho nhiều flashcard cùng lúc
 
-router.put("/flashcards/:id", authMiddleware, updateFlashCard); // Cập nhật flashcard
+router.put("/flashcards/:_id", authMiddleware, updateFlashCard); // Cập nhật flashcard
 router.delete("/flashcards/:_id", authMiddleware, deleteFlashCard); // Xóa flashcard
 
 // List Flashcard Routes
@@ -47,7 +47,7 @@ router.get("/list-flashcards/public", getAllFlashCardsPublic); // lấy tất c�
 router.get("/list-flashcards", authMiddleware, getAllListFlashCards); // Lấy tất cả danh sách flashcards của user
 router.get("/list-flashcards/exten", authMiddleware, getAllListFlashCardsWithExtension); // Sử dụng để lấy danh sách flashcards cho extension
 router.get("/list-flashcards/:id", authMiddleware, getListFlashCardById); // Lấy danh sách flashcards theo ID
-router.patch("/list-flashcards/:id", authMiddleware, updateListFlashCard); // Cập nhật danh sách flashcards
+router.patch("/list-flashcards/:_id", authMiddleware, updateListFlashCard); // Cập nhật danh sách flashcards
 router.delete("/list-flashcards/:id", authMiddleware, deleteListFlashCard); // Xóa danh sách flashcards
 
 // tính năng

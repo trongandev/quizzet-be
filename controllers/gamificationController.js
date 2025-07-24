@@ -20,13 +20,14 @@ exports.getTopUsers = async (req, res) => {
         const { skip = 0, limit = 10, user_id } = req.query;
 
         // Lấy top users
-        const topUsers = await GamificationProfile.find({})
+        const topUsers = await GamificationProfile.find()
             .sort({ xp: -1 })
             .skip(Number(skip))
             .limit(Number(limit))
             .select("level xp dailyStreak user_id")
             .populate("user_id", "_id displayName profilePicture")
             .lean();
+
         const totalUsers = await GamificationProfile.countDocuments({});
         let currentUser = null;
         let currentUserRank = null;

@@ -12,7 +12,7 @@ const getHistory = async (req, res) => {
         }
         res.status(200).json({ history, ok: true });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
 };
@@ -22,7 +22,7 @@ const getAllHistory = async (req, res) => {
         const history = await HistoryModel.find().populate("quiz_id", "title subject").populate("user_id", "profilePicture displayName").sort({ date: -1 }).exec();
         res.status(200).json({ ok: true, history });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
 };
@@ -35,7 +35,7 @@ const getHistoryById = async (req, res) => {
 
         res.status(200).json({ history, question: question.questions.data_quiz });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(404).json({ message: "Không tìm thấy history", status: 404 });
     }
 };

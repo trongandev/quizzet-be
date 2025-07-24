@@ -26,6 +26,8 @@ passport.use(
                             user_id: user._id,
                         });
                         await newGamificationProfile.save();
+                        user.gamification = newGamificationProfile._id;
+                        await user.save();
                     }
                     return done(null, user);
                 } else {
@@ -42,7 +44,6 @@ passport.use(
                         existingUserByEmail.displayName = existingUserByEmail.name || profile.displayName;
 
                         // Lưu lại user đã merge
-                        await existingUserByEmail.save();
 
                         // kiểm tra xem có GamificationProfile không, nếu không thì tạo mới
                         const gamificationProfile = await GamificationProfile.findOne({ user_id: existingUserByEmail._id });
@@ -52,7 +53,8 @@ passport.use(
                             });
                             await newGamificationProfile.save();
                         }
-
+                        existingUserByEmail.gamification = gamificationProfile._id;
+                        await existingUserByEmail.save();
                         return done(null, existingUserByEmail);
                     }
 
@@ -70,6 +72,7 @@ passport.use(
                         user_id: newUser._id,
                     });
                     await newGamificationProfile.save();
+                    newUser.gamification = newGamificationProfile._id;
                     await newUser.save();
 
                     return done(null, newUser);

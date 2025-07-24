@@ -5,7 +5,7 @@ const Get = async (req, res) => {
         const notice = await Notice.find().sort({ created_at: -1 });
         res.status(200).json({ ok: true, notice });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
 };
@@ -15,7 +15,7 @@ const GetPublic = async (req, res) => {
         const notice = await Notice.find({ status: true });
         res.status(200).json({ ok: true, notice });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
 };
@@ -25,7 +25,7 @@ const GetbyId = async (req, res) => {
         const subOutline = await Notice.findById({ id });
         res.status(200).json(subOutline);
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
 };
@@ -45,7 +45,7 @@ const Create = async (req, res) => {
         await newSO.save();
         res.status(201).json({ message: "Thêm thành công", notice: newSO });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
 };
@@ -79,7 +79,7 @@ const Update = async (req, res) => {
 
         res.status(200).json({ message: "Cập nhật thành công", updatedQuiz });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
 };
@@ -90,7 +90,7 @@ const Delete = async (req, res) => {
         await Notice.findByIdAndDelete(id);
         res.status(200).json({ ok: true, message: "Xóa thành công" });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
 };

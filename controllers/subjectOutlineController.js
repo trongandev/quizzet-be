@@ -45,7 +45,7 @@ const addSubOutline = async (req, res) => {
             res.status(201).json({ ok: true, link: newSO.slug, message: "Thêm thành công" });
         }
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
 };
@@ -58,7 +58,7 @@ const getSubOutline = async (req, res) => {
             .sort({ date: -1 });
         res.status(200).json({ findText, findFile });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
 };
@@ -68,7 +68,7 @@ const getSubOutlineAdmin = async (req, res) => {
         const findText = await SOModel.find().populate("quest", "data_so").populate("user_id", "_id displayName profilePicture").sort({ date: -1 }).exec();
         return res.status(200).json({ ok: true, findText });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
 };
@@ -82,7 +82,7 @@ const getSubOutlineByUser = async (req, res) => {
         }
         res.status(200).json(subOutline);
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
 };
@@ -96,7 +96,7 @@ const getSubOutlineBySlug = async (req, res) => {
         }
         res.status(200).json(subOutline);
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
 };
@@ -116,7 +116,7 @@ const updateSO = async (req, res) => {
         }
         return res.status(200).json({ ok: true, message: "Cập nhật thành công", update_profile });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
 };
@@ -131,7 +131,7 @@ const updateViewSO = async (req, res) => {
         const update = await SOModel.findByIdAndUpdate(id, { $set: { view: so.view + 1 } }, { new: true });
         res.status(200).json({ ok: true, update });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
 };
@@ -142,7 +142,7 @@ const deleteSubOutline = async (req, res) => {
         await SOModel.findByIdAndDelete(id);
         res.status(200).json({ message: "Xóa thành công" });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
 };

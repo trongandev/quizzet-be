@@ -33,11 +33,19 @@ const registerUser = async (req, res) => {
             user_id: newUser._id,
         });
         await gamificationProfile.save();
-
+        newUser.gamification = gamificationProfile._id;
         await newUser.save();
-        res.status(201).json({ message: "Đăng ký thành công", ok: true });
+
+        const payload = {
+            user: {
+                id: newUser._id,
+            },
+        };
+
+        const token = jwt.sign(payload, process.env.SECRET_KEY, { expiresIn: "30d" });
+        res.status(201).json({ message: "Đăng ký thành công", ok: true, token });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
 };
@@ -72,11 +80,17 @@ const loginUser = async (req, res) => {
         const token = jwt.sign(payload, process.env.SECRET_KEY, { expiresIn: "30d" });
         // kiểm tra xem có GamificationProfile không, nếu không thì tạo mới
         const gamificationProfile = await GamificationProfile.findOne({ user_id: user._id });
-        if (!gamificationProfile) {
-            const newGamificationProfile = new GamificationProfile({
-                user_id: user._id,
-            });
-            await newGamificationProfile.save();
+
+        if (!user.gamification) {
+            if (!gamificationProfile) {
+                const newGamificationProfile = new GamificationProfile({
+                    user_id: user._id,
+                });
+                await newGamificationProfile.save();
+            } else {
+                user.gamification = gamificationProfile._id;
+                await user.save();
+            }
         }
 
         res.cookie("token", token, {
@@ -88,7 +102,7 @@ const loginUser = async (req, res) => {
 
         res.status(201).json({ message: "Đăng nhập thành công", token, isChangePassword: user.isChangePassword });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
 };
@@ -127,7 +141,7 @@ const forgotPassword = async (req, res) => {
 
         res.status(200).json({ message: "Gửi thành công, vui lòng kiểm tra email của bạn" });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
 };

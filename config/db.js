@@ -7,7 +7,7 @@ const connectDB = async () => {
         console.log(`MongoDB connected`);
         loadTasksIntoCache(); // Tải task vào cache
     } catch (error) {
-        console.log("Mongoose connect error", error);
+        console.error("Mongoose connect error", error);
         process.exit(1);
     }
 };

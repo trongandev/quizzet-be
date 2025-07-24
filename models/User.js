@@ -40,6 +40,10 @@ const UserSchema = new mongoose.Schema({
         type: String,
         default: "local",
     },
+    gamification: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "GamificationProfile",
+    },
     profilePicture: {
         type: String,
         default: "https://vnn-imgs-a1.vgcloud.vn/image1.ictnews.vn/_Files/2020/03/17/trend-avatar-1.jpg",

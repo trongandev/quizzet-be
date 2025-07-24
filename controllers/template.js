@@ -5,7 +5,7 @@ const Get = async (req, res) => {
         const subOutline = await SO.find();
         res.status(200).json(subOutline);
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
 };
@@ -16,7 +16,7 @@ const GetbyId = async (req, res) => {
         const subOutline = await SO.findById({ id });
         res.status(200).json(subOutline);
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
 };
@@ -39,7 +39,7 @@ const Create = async (req, res) => {
         await newSO.save();
         res.status(201).json({ message: "Thêm thành công" });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
 };
@@ -83,7 +83,7 @@ const Update = async (req, res) => {
 
         res.status(200).json({ message: "Cập nhật Quiz thành công", updatedQuiz });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
 };
@@ -94,7 +94,7 @@ const Delete = async (req, res) => {
         await SO.findByIdAndDelete(id);
         res.status(200).json({ message: "Xóa thành công" });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
 };

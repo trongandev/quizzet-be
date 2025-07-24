@@ -48,7 +48,7 @@ const sendForgetPasswordMail = async (user, new_password) => {
 
         await transporter.sendMail(options);
     } catch (error) {
-        console.log(error);
+        console.error(error);
     }
 };
 
@@ -63,7 +63,7 @@ const sendOTPMail = async (user) => {
 
         await transporter.sendMail(options);
     } catch (error) {
-        console.log(error);
+        console.error(error);
     }
 };
 
@@ -78,7 +78,7 @@ const sendFeedbackMail = async (username, feedback) => {
 
         await transporter.sendMail(options);
     } catch (error) {
-        console.log(error);
+        console.error(error);
     }
 };
 

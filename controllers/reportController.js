@@ -6,7 +6,7 @@ const GetAll = async (req, res) => {
         const result = await Report.find().populate("user_report", "_id profilePicture displayName").populate("resolved_by", "_id profilePicture displayName").sort({ created_at: -1 }).exec();
         res.status(200).json({ ok: true, result });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
 };
@@ -17,7 +17,7 @@ const GetbyId = async (req, res) => {
         const result = await Report.findById({ id });
         res.status(200).json(result);
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
 };
@@ -48,7 +48,7 @@ const Create = async (req, res) => {
         await newReport.save();
         res.status(201).json({ ok: true, message: "Gửi báo cáo thành công, vui lòng chờ admin xem xét" });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
 };
@@ -74,7 +74,7 @@ const Update = async (req, res) => {
 
         res.status(200).json({ ok: true, message: "Cập nhật báo cáo thành công", result });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
 };

@@ -14,7 +14,7 @@ const getAllProfile = async (req, res) => {
         const user = await User.find().select("-password").populate("displayName profilePicture").sort({ created_at: -1 }).exec();
         res.status(200).json({ user, ok: true });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
 };
@@ -22,7 +22,7 @@ const getAllProfile = async (req, res) => {
 const getProfile = async (req, res) => {
     try {
         const { id } = req.user;
-        const user = await User.findById(id).select("-password").populate("displayName profilePicture");
+        const user = await User.findById(id).select("displayName profilePicture").lean().exec();
         const quiz = await QuizModel.find({ uid: id }).sort({ date: -1 }).lean();
         const flashcards = await ListFlashCard.find({ userId: id }).sort({ created_at: -1 }).lean();
         const gamificationProfile = await GamificationProfile.findOne({ user_id: id })
@@ -42,7 +42,7 @@ const getProfile = async (req, res) => {
         }
         res.status(200).json({ user, quiz, flashcards, gamificationProfile, achievements, levels, tasks, activities, countFlashcard, ok: true });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
 };
@@ -84,7 +84,7 @@ const getAnythingInProfile = async (req, res) => {
 
         res.status(200).json({ ok: true, gamificationProfile, notifications, unreadCount, chats, unreadCountChat });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
 };
@@ -92,15 +92,11 @@ const getAnythingInProfile = async (req, res) => {
 const getOneProfile = async (req, res) => {
     try {
         const { id } = req.user;
-        const user = await User.findById(id).select("-password").populate("_id displayName profilePicture").lean().exec();
-        const gamification = await GamificationProfile.findOne({ user_id: id }).select("level xp dailyStreak").lean();
-        if (!user) {
-            return res.status(404).json({ msg: "Người dùng không tìm thấy" });
-        }
-        const newUser = { ...user, gamification };
-        res.status(200).json({ user: newUser, ok: true });
+        const user = await User.findById(id).select("_id displayName profilePicture role email").populate("gamification").lean().exec();
+
+        res.status(200).json({ user, ok: true });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
 };
@@ -119,7 +115,7 @@ const findProfileByName = async (req, res) => {
 
         res.status(200).json({ users, ok: true });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
 };
@@ -150,7 +146,7 @@ const getProfileById = async (req, res) => {
         }
         res.status(200).json({ user, quiz, flashcards, gamificationProfile, achievements, levels, tasks, activities, countFlashcard, ok: true });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
 };
@@ -179,7 +175,7 @@ const updateProfile = async (req, res) => {
         }
         return res.status(200).json({ ok: true, message: "Cập nhật thành công", update_profile });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
 };
@@ -210,7 +206,7 @@ const sendMail = async (req, res) => {
 
         // res.status(200).json({ message: "Gửi mail thành công", ok: true });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
 };
@@ -233,7 +229,7 @@ const checkOTP = async (req, res) => {
         await user.save();
         res.status(200).json({ message: "Xác thực thành công", ok: true });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
 };
@@ -248,7 +244,7 @@ const sendMailContribute = async (req, res) => {
 
         // await sendFeedbackMail(username, feedback);
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
 };

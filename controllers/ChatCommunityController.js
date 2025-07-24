@@ -55,7 +55,14 @@ const getMessages = async (req, res) => {
             .skip(skip)
             .limit(limit)
             .populate([
-                { path: "userId", select: "_id displayName profilePicture" },
+                {
+                    path: "userId",
+                    select: "_id displayName profilePicture gamification",
+                    populate: {
+                        path: "gamification",
+                        select: "level xp dailyStreak",
+                    },
+                },
                 {
                     path: "replyTo",
                     select: "message userId unsend image",
@@ -76,7 +83,7 @@ const getMessages = async (req, res) => {
             podiumUsers,
         });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ success: false, error: error.message });
     }
 };
@@ -116,7 +123,7 @@ const addMessage = async (req, res) => {
 
         res.status(201).send(populatedMessage);
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).send(error.message);
     }
 };
@@ -172,7 +179,7 @@ const unsendMessage = async (req, res) => {
 
         res.status(200).json({ ok: true, message: "Gỡ tin nhắn thành công" });
     } catch (error) {
-        console.log(error);
+        console.error(error);
 
         res.status(500).send(error.message);
     }
@@ -191,7 +198,7 @@ const editMessage = async (req, res) => {
 
         res.status(200).json({ ok: true, message: "Gỡ tin nhắn thành công" });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).send(error.message);
     }
 };

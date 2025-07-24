@@ -10,7 +10,7 @@ const getQuiz = async (req, res) => {
         const quiz = await QuizModel.find({ status: true }).populate("uid", "profilePicture displayName verify").sort({ date: -1 });
         res.status(200).json({ quiz });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
 };
@@ -22,7 +22,7 @@ const getQuizByUser = async (req, res) => {
 
         res.status(200).json({ ok: true, quiz });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
 };
@@ -31,13 +31,13 @@ const getQuizBySubject = async (req, res) => {
     try {
         const { id } = req.params;
         const quiz = await QuizModel.find({ subject: id, status: true }).populate("uid", "displayName profilePicture verify").sort({ date: -1 });
-        console.log(quiz);
+        console.error(quiz);
         if (!quiz) {
             return res.status(404).json({ message: "Không tìm thấy Quiz", ok: false });
         }
         res.status(200).json({ quiz });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
 };
@@ -47,7 +47,7 @@ const getQuizAdmin = async (req, res) => {
         const quiz = await QuizModel.find().populate("uid", "_id displayName profilePicture created_at").sort({ date: -1 }).lean().exec();
         res.status(200).json({ quiz, ok: true });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
 };
@@ -76,7 +76,7 @@ const getQuizById = async (req, res) => {
         await quiz.save(); // Lưu lại lượt xem mới
         res.status(200).json({ ok: true, quiz });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(404).json({ message: "Không tìm thấy Quiz", status: 404 });
     }
 };
@@ -214,7 +214,7 @@ const deleteQuiz = async (req, res) => {
         await deleteCache(`quiz_${_id}`); // Xoá cache nếu có
         res.status(200).json({ message: "Xoá Quiz thành công" });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
 };
@@ -264,7 +264,7 @@ const updateQuiz = async (req, res) => {
         await handleCreateActivity(req.user.id, "quiz", "Cập nhật bài quiz", quizId);
         res.status(200).json({ message: "Cập nhật Quiz thành công", updatedQuiz });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
 };
@@ -302,7 +302,7 @@ const approveQuiz = async (req, res) => {
             return res.status(200).json({ message: "Ẩn Quiz thành công" });
         }
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
     }
 };

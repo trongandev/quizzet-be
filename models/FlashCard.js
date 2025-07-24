@@ -89,6 +89,14 @@ const ListFlashCardSchema = new mongoose.Schema({
         type: Boolean,
         default: false, // Mặc định là riêng tư (false)
     },
+    isSuccess: {
+        type: Boolean,
+        default: false, // Mặc định là chưa hoàn thành
+    },
+    isHiddenTranscription: {
+        type: Boolean,
+        default: false, // Mặc định là không ẩn phiên âm
+    },
     flashcards: [
         {
             type: mongoose.Schema.Types.ObjectId,

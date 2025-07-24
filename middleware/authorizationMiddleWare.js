@@ -14,7 +14,7 @@ const authMiddleware = async (req, res, next) => {
             }
             next();
         } catch (error) {
-            console.log(error);
+            console.error(error);
             res.status(401).json({ message: "Bạn chưa đăng nhập, vui lòng đăng nhập" });
         }
     } else {
