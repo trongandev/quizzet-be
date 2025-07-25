@@ -262,10 +262,30 @@ const updateQuiz = async (req, res) => {
             return res.status(404).json({ message: "Không tìm thấy quiz để cập nhật", status: 404 });
         }
         await handleCreateActivity(req.user.id, "quiz", "Cập nhật bài quiz", quizId);
-        res.status(200).json({ message: "Cập nhật Quiz thành công", updatedQuiz });
+        res.status(200).json({ ok: true, message: "Cập nhật Quiz thành công", updatedQuiz });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
+    }
+};
+
+const updateAllQuiz = async (req, res) => {
+    try {
+        const { _id } = req.params;
+        const updateQuiz = await QuizModel.findByIdAndUpdate(
+            _id,
+            {
+                $set: req.body,
+            },
+            { new: true }
+        );
+        if (!updateQuiz) {
+            return res.status(404).json({ message: "Không tìm thấy Quiz", status: 404 });
+        }
+        res.status(200).json({ ok: true, message: "Cập nhật Quiz thành công", updateQuiz });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: error.message });
     }
 };
 
@@ -432,6 +452,7 @@ module.exports = {
     createQuiz,
     deleteQuiz,
     updateQuiz,
+    updateAllQuiz,
     approveQuiz,
     DocumentBank,
     increaseHelpfulCount,
