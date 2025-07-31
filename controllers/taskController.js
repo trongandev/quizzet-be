@@ -13,6 +13,17 @@ exports.getTaskDefinitions = async (req, res) => {
     }
 };
 
+exports.getTasks = async (req, res) => {
+    try {
+        // Lấy task trực tiếp từ cache, không cần truy vấn DB
+        const tasks = await Task.find({ isActive: true }).lean();
+
+        res.status(200).json({ ok: true, tasks });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 exports.reloadTask = async (req, res) => {
     try {
         await loadTasksIntoCache();

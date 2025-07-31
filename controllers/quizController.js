@@ -188,7 +188,7 @@ const createQuiz = async (req, res) => {
             sender: id,
             type: "system",
             link: `/quiz/${savedQuiz.slug}`,
-            content: "Tạo bài quiz thành công, bài của bạn đang được xem xét để được hiển thị lên trang chủ.",
+            content: "Tạo bài quiz thành công",
         });
         await GamificationService.addXpForTask(id, "CREATE_QUIZ");
 

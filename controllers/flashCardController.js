@@ -414,11 +414,34 @@ exports.getAllListFlashCards = async (req, res) => {
     try {
         const { id } = req.user;
 
-        const listFlashCards = await ListFlashCard.find({ userId: id }).sort({ created_at: -1 }).populate("flashcards", "_id status").populate("userId", "_id displayName profilePicture");
+        const listFlashCards = await ListFlashCard.find({ userId: id })
+            .sort({ created_at: -1 })
+            .populate("flashcards", "_id status history nextReviewDate")
+            .populate("userId", "_id displayName profilePicture")
+            .lean(); // Thêm lean() để trả về plain object
 
-        if (!listFlashCards) {
-            return res.status(404).json({ message: "Không tìm thấy danh sách flashcards cho người dùng này" });
-        }
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        // 3. Tỉ lệ đúng của từ trong từng bộ list flashcard
+        listFlashCards.forEach((list) => {
+            let totalCorrectReviews = 0;
+            let totalAllReviews = 0;
+            let countCardsDueToday = 0;
+
+            list.flashcards.forEach((card) => {
+                if (card.history && card.history.length > 0) {
+                    totalAllReviews += card.history.length;
+                    totalCorrectReviews += card.history.filter((h) => h.quality >= 3).length;
+                }
+                if (new Date(card.nextReviewDate) <= today) {
+                    countCardsDueToday++;
+                }
+            });
+
+            list.accuracyPercentage = totalAllReviews === 0 ? 0 : Math.round((totalCorrectReviews / totalAllReviews) * 100);
+            list.countCardsDueToday = countCardsDueToday;
+        });
 
         return res.status(200).json({ ok: true, listFlashCards });
     } catch (error) {
@@ -468,22 +491,17 @@ exports.getListFlashCardById = async (req, res) => {
 exports.updateListFlashCard = async (req, res) => {
     try {
         const { _id } = req.params;
-        const { isSuccess, isHiddenTranscription } = req.body;
-        let listFlashCard = null;
-        if (isHiddenTranscription) {
-            listFlashCard = await ListFlashCard.findByIdAndUpdate(_id, isHiddenTranscription, { new: true });
-        }
-        if (isSuccess) {
-            listFlashCard = await ListFlashCard.findByIdAndUpdate(_id, isSuccess, { new: true });
-        }
+        const updateData = req.body;
+        console.log("Update data:", updateData);
+        const cacheKey = `listFlashCards_${_id}`;
+        const listFlashCard = await ListFlashCard.findByIdAndUpdate(_id, updateData, { new: true });
 
         if (!listFlashCard) {
             return res.status(404).json({ message: "Không tìm thấy danh sách flashcards này để cập nhật" });
         }
-        await listFlashCard.save();
-        await deleteCache(`summary_${req.user.id}`);
-        await handleCreateActivity(req.user.id, "flashcard", "Cập nhật danh sách flashcard", listFlashCard._id.toString());
-        return res.status(200).json({ ok: true, message: "Danh sách flashcards đã được cập nhật", listFlashCard, isSuccess, isHiddenTranscription });
+        await deleteCache(cacheKey);
+
+        return res.status(200).json({ ok: true, message: "Danh sách flashcards đã được cập nhật", listFlashCard });
     } catch (error) {
         return res.status(500).json({ message: "Lỗi khi cập nhật danh sách flashcards", error: error.message });
     }

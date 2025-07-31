@@ -103,20 +103,7 @@ const ListFlashCardSchema = new mongoose.Schema({
             ref: "FlashCard",
         },
     ],
-    progress: {
-        totalCards: {
-            type: Number,
-            default: 0, // Tổng số flashcard trong danh sách
-        },
-        rememberedCards: {
-            type: Number,
-            default: 0, // Số flashcard đã nhớ
-        },
-        percentage: {
-            type: Number,
-            default: 0, // % thuộc của cả danh sách
-        },
-    },
+
     last_practice_date: {
         type: Date, // Lưu ngày luyện tập gần nhất để không luyện tập quá nhiều
         default: null,

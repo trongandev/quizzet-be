@@ -11,7 +11,7 @@ const { getActivitiesByAction } = require("../services/helperFunction");
 // const { sendFeedbackMail, sendOTPMail } = require("../services/nodemailer");
 const getAllProfile = async (req, res) => {
     try {
-        const user = await User.find().select("-password").populate("displayName profilePicture").sort({ created_at: -1 }).exec();
+        const user = await User.find().select("_id displayName profilePicture email").sort({ created_at: -1 }).exec();
         res.status(200).json({ user, ok: true });
     } catch (error) {
         console.error(error);
@@ -22,9 +22,36 @@ const getAllProfile = async (req, res) => {
 const getProfile = async (req, res) => {
     try {
         const { id } = req.user;
-        const user = await User.findById(id).select("displayName profilePicture").lean().exec();
+        const user = await User.findById(id).select("displayName profilePicture role email").lean().exec();
         const quiz = await QuizModel.find({ uid: id }).sort({ date: -1 }).lean();
-        const flashcards = await ListFlashCard.find({ userId: id }).sort({ created_at: -1 }).lean();
+        const flashcards = await ListFlashCard.find({ userId: id })
+            .sort({ created_at: -1 })
+            .populate("flashcards", "_id status history nextReviewDate")
+            .populate("userId", "_id displayName profilePicture")
+            .lean(); // Thêm lean() để trả về plain object
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        // 3. Tỉ lệ đúng của từ trong từng bộ list flashcard
+        flashcards.forEach((list) => {
+            let totalCorrectReviews = 0;
+            let totalAllReviews = 0;
+            let countCardsDueToday = 0;
+
+            list.flashcards.forEach((card) => {
+                if (card.history && card.history.length > 0) {
+                    totalAllReviews += card.history.length;
+                    totalCorrectReviews += card.history.filter((h) => h.quality >= 3).length;
+                }
+                if (new Date(card.nextReviewDate) <= today) {
+                    countCardsDueToday++;
+                }
+            });
+
+            list.accuracyPercentage = totalAllReviews === 0 ? 0 : Math.round((totalCorrectReviews / totalAllReviews) * 100);
+            list.countCardsDueToday = countCardsDueToday;
+        });
         const gamificationProfile = await GamificationProfile.findOne({ user_id: id })
             .populate({
                 path: "achievements.achievement", // Lấy thông tin chi tiết của achievement
@@ -128,7 +155,7 @@ const getProfileById = async (req, res) => {
         }
         const user = await User.findById(id).select("-password").populate("displayName profilePicture");
         const quiz = await QuizModel.find({ uid: id }).sort({ date: -1 }).lean();
-        const flashcards = await ListFlashCard.find({ userId: id }).sort({ created_at: -1 }).lean();
+        const flashcards = await ListFlashCard.find({ userId: id }).populate("userId").sort({ created_at: -1 }).lean();
         const gamificationProfile = await GamificationProfile.findOne({ user_id: id })
             .populate({
                 path: "achievements.achievement", // Lấy thông tin chi tiết của achievement
@@ -137,7 +164,7 @@ const getProfileById = async (req, res) => {
             .lean();
         const achievements = await Achievement.find().lean();
         const levels = await Level.find().lean().sort({ level: 1 });
-        const tasks = await getTaskDefinitions();
+        const tasks = getTaskDefinitions();
         const countFlashcard = await FlashCard.countDocuments({ userId: id });
 
         const activities = await getActivitiesByAction(id, 3); // Lấy activities trong 3 ngày gần đây
