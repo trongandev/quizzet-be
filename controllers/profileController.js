@@ -11,7 +11,7 @@ const { getActivitiesByAction } = require("../services/helperFunction");
 // const { sendFeedbackMail, sendOTPMail } = require("../services/nodemailer");
 const getAllProfile = async (req, res) => {
     try {
-        const user = await User.find().select("_id displayName profilePicture email").sort({ created_at: -1 }).exec();
+        const user = await User.find().select("-password").sort({ created_at: -1 }).exec();
         res.status(200).json({ user, ok: true });
     } catch (error) {
         console.error(error);
