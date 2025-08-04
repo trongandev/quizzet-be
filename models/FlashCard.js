@@ -41,6 +41,11 @@ const FlashCardSchema = new mongoose.Schema({
         enum: ["learned", "remembered", "reviewing"], // Các trạng thái của từ
         default: "reviewing", // Mặc định là cần ôn tập
     },
+    level: {
+        type: String,
+        enum: ["A1", "A2", "B1", "B2", "C1", "C2"], // Các cấp độ từ vựng
+        default: "A1", // Mặc định là cấp độ A1
+    },
     progress: {
         learnedTimes: {
             type: Number,

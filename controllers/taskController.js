@@ -16,7 +16,7 @@ exports.getTaskDefinitions = async (req, res) => {
 exports.getTasks = async (req, res) => {
     try {
         // Lấy task trực tiếp từ cache, không cần truy vấn DB
-        const tasks = await Task.find({ isActive: true }).lean();
+        const tasks = await Task.find({ isActive: true }).sort({ createdAt: -1 }).lean();
 
         res.status(200).json({ ok: true, tasks });
     } catch (error) {
@@ -35,25 +35,27 @@ exports.reloadTask = async (req, res) => {
 
 exports.createTask = async (req, res) => {
     try {
-        const { taskId, description, xpPerAction, dailyLimitCount, unlockLevel } = req.body;
-
+        const { taskId, name, icon, description, xpPerAction, dailyLimitCount, unlockLevel } = req.body;
         // Kiểm tra dữ liệu đầu vào
-        if (!taskId || !description || !xpPerAction || !dailyLimitCount || !unlockLevel) {
+        if (!taskId || !name || !description || !icon) {
             return res.status(400).json({ message: "Thiếu thông tin nhiệm vụ" });
         }
 
         // Tạo nhiệm vụ mới
         const newTask = Task({
             taskId,
+            name,
             description,
             xpPerAction,
             dailyLimitCount,
             unlockLevel,
+            icon,
         });
         await newTask.save();
 
         res.status(201).json({ message: "Nhiệm vụ đã được tạo" });
     } catch (error) {
+        console.error(error);
         res.status(500).json({ message: "Lỗi server" });
     }
 };
