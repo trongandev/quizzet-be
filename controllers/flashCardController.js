@@ -234,7 +234,7 @@ exports.createListFlashCards = async (req, res) => {
 
         // Lặp qua danh sách flashcard để tạo từng cái
         for (const flashcardData of data) {
-            const { title, define, type_of_word, transcription, example, note } = flashcardData;
+            const { title, define, type_of_word, transcription, level, example, note } = flashcardData;
 
             // Kiểm tra thông tin bắt buộc
             if (!title || !define) {
@@ -248,6 +248,7 @@ exports.createListFlashCards = async (req, res) => {
                 language,
                 type_of_word,
                 transcription,
+                level,
                 example,
                 note,
             });
