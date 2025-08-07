@@ -69,20 +69,20 @@ const BaseQuestionSchema = new Schema(
 // --- Exam Schema Chính ---
 const EnglishExamSchema = new Schema({
     user_id: { type: Schema.Types.ObjectId, ref: "User", required: true }, // Liên kết với người tạo bài kiểm tra
-    exam_title: { type: String, required: true },
-    exam_description: { type: String },
-    difficulty_level: {
+    title: { type: String, required: true },
+    description: { type: String },
+    difficulty: {
         type: String,
-        enum: ["A1", "A2", "B1", "B2", "C1", "C2", "Beginner", "Intermediate", "Advanced"],
+        enum: ["A1", "A2", "B1", "B2", "C1", "C2"],
         required: true,
     },
-    target_skills: [
+    skills: [
         {
             type: String,
             enum: ["vocabulary", "grammar", "reading", "listening", "writing"],
         },
     ],
-    estimated_time_minutes: { type: Number, default: 60 },
+    timeLimit: { type: Number, default: 30 },
     total_score: { type: Number, default: 100 },
     questions: [BaseQuestionSchema], // Mảng các câu hỏi nhúng
     created_at: { type: Date, default: Date.now },
