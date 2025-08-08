@@ -38,7 +38,19 @@ const Create = async (req, res) => {
             category,
         });
         await findFeedback.save();
-        res.status(201).json({ message: "Thêm thành công", findFeedback, ok: true });
+        const getOneFeedback = await Feedback.findOne({ _id: findFeedback._id })
+            .populate([
+                {
+                    path: "user_id",
+                    select: "_id displayName profilePicture role gamification",
+                    populate: {
+                        path: "gamification",
+                        select: "level xp dailyStreak",
+                    },
+                },
+            ])
+            .sort({ createdAt: -1 });
+        res.status(201).json({ message: "Thêm thành công", getOneFeedback, ok: true });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
