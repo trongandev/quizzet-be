@@ -9,6 +9,7 @@ const {
     createQuiz,
     deleteQuiz,
     updateQuiz,
+    updateQuizNew,
     DocumentBank,
     CreateComment,
     approveQuiz,
@@ -26,6 +27,7 @@ router.post("/", authMiddleware, createQuiz);
 router.post("/comment", authMiddleware, CreateComment);
 router.patch("/review/:_id", authMiddleware, approveQuiz);
 router.patch("/:_id", authMiddleware, updateQuiz);
+router.patch("/update/:_id", authMiddleware, updateQuizNew);
 router.patch("/admin/:_id", authMiddleware, updateAllQuiz);
 router.delete("/", authMiddleware, deleteQuiz);
 

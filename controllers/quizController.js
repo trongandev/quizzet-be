@@ -442,6 +442,51 @@ const DocumentBank = async (req, res) => {
     }
 };
 
+const updateQuizNew = async (req, res) => {
+    try {
+        const { _id } = req.params;
+        const { title, content, subject, img } = req.body;
+        const findBySlug = await QuizModel.findOne({ slug: _id });
+        if (!findBySlug) {
+            return res.status(404).json({ message: "Không tìm thấy Quiz", status: 404 });
+        }
+        const updatedQuiz = await QuizModel.findByIdAndUpdate(
+            findBySlug._id,
+            {
+                $set: {
+                    title: title || findBySlug.title,
+                    content: content || findBySlug.content,
+                    subject: subject || findBySlug.subject,
+                    img: img || findBySlug.img,
+                },
+            },
+            { new: true }
+        );
+        if (!updatedQuiz) {
+            return res.status(404).json({ message: "Không tìm thấy Quiz để cập nhật", status: 404 });
+        }
+        console.log("Updated Quiz:", req.body.questions);
+        const findQuestion = await DataQuizModel.findByIdAndUpdate(
+            findBySlug.questions,
+            {
+                $set: { data_quiz: req.body.questions },
+            },
+            { new: true, upsert: true }
+        );
+        if (!findQuestion) {
+            return res.status(404).json({ message: "Không tìm thấy Quiz để cập nhật", status: 404 });
+        }
+
+        await handleCreateActivity(req.user.id, "quiz", "Cập nhật bài quiz", findBySlug._id);
+        res.status(200).json({ ok: true, message: "Cập nhật Quiz thành công", findQuestion });
+    } catch (error) {
+        console.error("DocumentBank Error:", error);
+        res.status(500).json({
+            message: "Server gặp lỗi, vui lòng thử lại sau ít phút",
+        });
+    }
+};
+
 module.exports = {
     getQuiz,
     getQuizByUser,
@@ -452,6 +497,7 @@ module.exports = {
     createQuiz,
     deleteQuiz,
     updateQuiz,
+    updateQuizNew,
     updateAllQuiz,
     approveQuiz,
     DocumentBank,
