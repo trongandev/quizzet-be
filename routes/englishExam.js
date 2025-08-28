@@ -24,11 +24,13 @@ const {
     getMyExams,
     cloneExam,
     manualGrading,
+    GetAllEnglishExamAdmin,
 } = require("../controllers/englishExamController");
 
 const router = express.Router();
 
 // Public routes
+router.get("/admin", validatePagination, GetAllEnglishExamAdmin); // Lấy tất cả bài thi (unpublished and published)
 router.get("/", validatePagination, GetAllEnglishExam); // Lấy tất cả bài thi (published)
 router.get("/share/:shareLink", validateShareLink, getExamByShareLink); // Lấy bài thi theo share link
 

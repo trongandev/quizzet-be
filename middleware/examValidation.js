@@ -15,20 +15,20 @@ const handleValidationErrors = (req, res, next) => {
 
 // Validation for creating exam
 const validateCreateExam = [
-    body("exam_title").notEmpty().withMessage("Tiêu đề bài thi không được để trống").isLength({ min: 3, max: 200 }).withMessage("Tiêu đề phải có từ 3-200 ký tự"),
+    body("title").notEmpty().withMessage("Tiêu đề bài thi không được để trống").isLength({ min: 3, max: 200 }).withMessage("Tiêu đề phải có từ 3-200 ký tự"),
 
-    body("difficulty_level").isIn(["A1", "A2", "B1", "B2", "C1", "C2", "Beginner", "Intermediate", "Advanced"]).withMessage("Mức độ khó không hợp lệ"),
+    body("difficulty").isIn(["a1", "a2", "b1", "b2", "c1", "c2"]).withMessage("Mức độ khó không hợp lệ"),
 
-    body("target_skills")
+    body("skills")
         .isArray()
         .withMessage("Kỹ năng mục tiêu phải là mảng")
         .custom((skills) => {
-            const validSkills = ["Vocabulary", "Grammar", "Reading", "Listening", "Writing"];
+            const validSkills = ["vocabulary", "grammar", "reading", "listening", "writing"];
             return skills.every((skill) => validSkills.includes(skill));
         })
         .withMessage("Kỹ năng mục tiêu không hợp lệ"),
 
-    body("estimated_time_minutes").optional().isInt({ min: 1, max: 300 }).withMessage("Thời gian ước tính phải từ 1-300 phút"),
+    body("timeLimit").optional().isInt({ min: 1, max: 300 }).withMessage("Thời gian ước tính phải từ 1-300 phút"),
 
     body("questions").isArray({ min: 1 }).withMessage("Phải có ít nhất 1 câu hỏi"),
 
@@ -36,7 +36,7 @@ const validateCreateExam = [
         .isIn(["multiple_choice", "fill_in_the_blank", "matching", "rearrange_sentences", "rewrite_sentence", "image_description", "listening_comprehension", "reading_comprehension"])
         .withMessage("Loại câu hỏi không hợp lệ"),
 
-    body("questions.*.skill_focus").isIn(["Vocabulary", "Grammar", "Reading", "Listening", "Writing"]).withMessage("Kỹ năng tập trung không hợp lệ"),
+    body("questions.*.skill_focus").isIn(["vocabulary", "grammar", "reading", "listening", "writing"]).withMessage("Kỹ năng tập trung không hợp lệ"),
 
     body("questions.*.question_text").notEmpty().withMessage("Nội dung câu hỏi không được để trống"),
 

@@ -73,7 +73,7 @@ const EnglishExamSchema = new Schema({
     description: { type: String },
     difficulty: {
         type: String,
-        enum: ["A1", "A2", "B1", "B2", "C1", "C2"],
+        enum: ["a1", "a2", "b1", "b2", "c1", "c2"],
         required: true,
     },
     skills: [

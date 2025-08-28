@@ -4,6 +4,37 @@ const { v4: uuidv4 } = require("uuid");
 const { handleCreateActivity } = require("../services/helperFunction");
 const ExamGradingService = require("../services/examGradingService");
 
+exports.GetAllEnglishExamAdmin = async (req, res) => {
+    try {
+        const { page = 1, limit = 10, difficulty_level, target_skills, is_published = true } = req.query;
+        const skip = (page - 1) * limit;
+
+        // Build filter object
+        const filter = { is_published };
+        if (difficulty_level) filter.difficulty_level = difficulty_level;
+        if (target_skills) filter.target_skills = { $in: target_skills.split(",") };
+
+        const englishExams = await EnglishExam.find(filter).populate("user_id", "_id displayName profilePicture").sort({ created_at: -1 }).skip(skip).limit(Number(limit)).lean();
+
+        const total = await EnglishExam.countDocuments(filter);
+
+        res.status(200).json({
+            ok: true,
+            englishExams,
+            pagination: {
+                currentPage: Number(page),
+                totalPages: Math.ceil(total / limit),
+                totalItems: total,
+                hasNext: page < Math.ceil(total / limit),
+                hasPrev: page > 1,
+            },
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server gặp lỗi, vui lòng thử lại sau ít phút" });
+    }
+};
+
 // Lấy tất cả bài thi
 exports.GetAllEnglishExam = async (req, res) => {
     try {
@@ -15,7 +46,7 @@ exports.GetAllEnglishExam = async (req, res) => {
         if (difficulty_level) filter.difficulty_level = difficulty_level;
         if (target_skills) filter.target_skills = { $in: target_skills.split(",") };
 
-        const englishExams = await EnglishExam.find(filter).populate("user_id", "_id displayName profilePicture").sort({ created_at: -1 }).skip(skip).limit(Number(limit)).lean();
+        const englishExams = await EnglishExam.find().populate("user_id", "_id displayName profilePicture").sort({ created_at: -1 }).skip(skip).limit(Number(limit)).lean();
 
         const total = await EnglishExam.countDocuments(filter);
 
@@ -59,7 +90,6 @@ exports.createEnglishExam = async (req, res) => {
     try {
         const { id } = req.user;
         const examData = req.body;
-
         // Generate unique question_ids for each question
         examData.questions = examData.questions.map((question) => ({
             ...question,
