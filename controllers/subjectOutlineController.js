@@ -90,7 +90,7 @@ const getSubOutlineByUser = async (req, res) => {
 const getSubOutlineBySlug = async (req, res) => {
     try {
         const { id } = req.params;
-        const subOutline = await SOModel.findOne({ _id: id }).populate("quest", "data_so");
+        const subOutline = await SOModel.findOne({ slug: id }).populate("quest", "data_so");
         if (!subOutline) {
             return res.status(404).json({ message: "Không tìm thấy", ok: false });
         }
