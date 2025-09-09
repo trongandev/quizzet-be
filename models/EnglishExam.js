@@ -59,7 +59,7 @@ const BaseQuestionSchema = new Schema(
             enum: ["vocabulary", "grammar", "reading", "listening", "writing"],
             required: true,
         },
-        question_text: { type: String, required: true },
+        question_text: { type: String },
         explanation: { type: String },
         score_points: { type: Number, required: true, default: 1 },
     },

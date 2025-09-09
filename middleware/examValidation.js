@@ -38,7 +38,7 @@ const validateCreateExam = [
 
     body("questions.*.skill_focus").isIn(["vocabulary", "grammar", "reading", "listening", "writing"]).withMessage("Kỹ năng tập trung không hợp lệ"),
 
-    body("questions.*.question_text").notEmpty().withMessage("Nội dung câu hỏi không được để trống"),
+    // body("questions.*.question_text").notEmpty().withMessage("Nội dung câu hỏi không được để trống"),
 
     body("questions.*.score_points").optional().isInt({ min: 1, max: 20 }).withMessage("Điểm số phải từ 1-20"),
 
@@ -110,7 +110,7 @@ const validateQuestionData = (req, res, next) => {
 
         switch (question_type) {
             case "multiple_choice":
-            case "reading_comprehension":
+            // case "reading_comprehension":
             case "listening_comprehension":
                 if (!question.options || !Array.isArray(question.options) || question.options.length < 2) {
                     return res.status(400).json({
